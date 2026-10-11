@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Light Theme (matches user screenshot exactly) */
+  --color-ink: 248 249 246;     /* #f8f9f6 off-white canvas */
+  --color-paper: 10 11 10;      /* #0a0b0a deep black typography */
+  --color-surface: 255 255 255; /* pure white cards */
+  --color-border: 0 0 0;        /* subtle dark borders */
+  --grid-line: rgba(0, 0, 0, 0.045);
+}
+
+.dark {
+  /* Dark Theme */
+  --color-ink: 10 11 10;        /* #0a0b0a dark canvas */
+  --color-paper: 243 244 246;   /* #f3f4f6 paper text */
+  --color-surface: 18 20 18;
+  --color-border: 255 255 255;
+  --grid-line: rgba(255, 255, 255, 0.03);
+}
+
+@layer base {
+  body {
+    @apply bg-ink text-paper antialiased font-sans;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .bg-grid {
+    background-size: 40px 40px;
+    background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+                      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  }
+}
+
+/* Light Mode Overrides for semi-transparent dark-mode-first utilities */
+html:not(.dark) .border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+html:not(.dark) .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+html:not(.dark) .border-white\/15 {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+html:not(.dark) .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+html:not(.dark) .border-white\/30 {
+  border-color: rgba(0, 0, 0, 0.22) !important;
+}
+
+html:not(.dark) .bg-white\/5 {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+}
+
+html:not(.dark) .bg-white\/10 {
+  background-color: #ffffff !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+}
+
+html:not(.dark) .bg-white\/20 {
+  background-color: #ffffff !important;
+}
+
+html:not(.dark) .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+html:not(.dark) .hover\:bg-white\/10:hover {
+  background-color: rgba(0, 0, 0, 0.07) !important;
+}
+
+html:not(.dark) .hover\:bg-white\/20:hover {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Header navbar pill & Sidebar layout in light mode */
+html:not(.dark) .bg-ink\/50 {
+  background-color: rgba(255, 255, 255, 0.88) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+html:not(.dark) .bg-ink\/30 {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+html:not(.dark) .bg-ink\/40 {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+html:not(.dark) .bg-ink\/80 {
+  background-color: rgba(248, 249, 246, 0.88) !important;
+}
+
+/* Light mode selection */
+html:not(.dark) ::selection {
+  background-color: rgba(132, 204, 22, 0.3);
+  color: #0a0b0a;
+}

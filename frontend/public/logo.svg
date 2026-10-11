@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100" width="120" height="100">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&amp;display=swap');
+    .logo-text { font-family: 'Bricolage Grotesque', sans-serif; font-size: 85px; font-weight: 800; }
+    .letter-e { fill: #0a0b0a; }
+    @media (prefers-color-scheme: dark) {
+      .letter-e { fill: #ffffff; }
+    }
+  </style>
+  <text x="10" y="80" class="logo-text letter-e">E</text>
+  <text x="65" y="80" class="logo-text" fill="#84cc16">₹</text>
+</svg>
