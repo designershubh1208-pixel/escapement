@@ -193,27 +193,59 @@ class LiveEcommerceScraperService:
                 page.goto(target_url, wait_until="domcontentloaded", timeout=12000)
                 page.wait_for_timeout(1500)
 
-                content = page.content()
-                prices = re.findall(r"₹\s*([0-9,]+)", content)
-                titles = page.locator("div.KzDlHZ, a.wjcEIp, a.s1Q9rs, div._4rR01T").all_text_contents()
-                first_title = titles[0] if titles else query
+                best_price_paise = None
+                best_title = None
+                best_url = None
+
+                # 1. Search in data-id cards (Flipkart's item cards)
+                cards = page.locator("div[data-id]").all()
+                for card in cards[:12]:
+                    txt = card.inner_text()
+                    m = re.search(r"₹([0-9,]+)", txt)
+                    if m:
+                        paise = cls.parse_inr_amount(m.group(1))
+                        if paise and paise > 10000:  # Valid price (> ₹100)
+                            lines = [
+                                l.strip() for l in txt.split("\n") 
+                                if l.strip() and not l.startswith("Add to") and not l.startswith("Coming") and not l.startswith("Sponsored") and not l.startswith("₹")
+                            ]
+                            title_cand = lines[0] if lines else query
+                            link_attr = card.locator("a").first.get_attribute("href")
+                            full_href = f"https://www.flipkart.com{link_attr}" if link_attr and link_attr.startswith("/") else (link_attr or target_url)
+                            
+                            best_price_paise = paise
+                            best_title = title_cand
+                            best_url = full_href
+                            break
+
+                # 2. Fallback to general price extraction if data-id cards were not found
+                if not best_price_paise:
+                    body_text = page.inner_text("body")
+                    price_matches = re.findall(r"₹([0-9]{1,3}(?:,[0-9]{2,3})+)", body_text)
+                    if price_matches:
+                        for pr in price_matches:
+                            paise = cls.parse_inr_amount(pr)
+                            if paise and paise > 10000:
+                                best_price_paise = paise
+                                titles = page.locator("div.KzDlHZ, a.wjcEIp, a.s1Q9rs, div._4rR01T").all_text_contents()
+                                best_title = titles[0] if titles else query
+                                best_url = target_url
+                                break
 
                 browser.close()
 
-                if prices:
-                    first_price_paise = cls.parse_inr_amount(prices[0])
-                    if first_price_paise:
-                        return {
-                            "success": True,
-                            "merchant": "Flipkart",
-                            "product_title": first_title,
-                            "price_paise": first_price_paise,
-                            "price_inr": first_price_paise / 100.0,
-                            "currency": "INR",
-                            "source_url": target_url,
-                            "in_stock": True,
-                            "verified_at": datetime.utcnow().isoformat()
-                        }
+                if best_price_paise:
+                    return {
+                        "success": True,
+                        "merchant": "Flipkart",
+                        "product_title": best_title or query,
+                        "price_paise": best_price_paise,
+                        "price_inr": best_price_paise / 100.0,
+                        "currency": "INR",
+                        "source_url": best_url or target_url,
+                        "in_stock": True,
+                        "verified_at": datetime.utcnow().isoformat()
+                    }
 
         except Exception as e:
             logger.warning(f"Flipkart sync scrape exception: {e}")
@@ -229,6 +261,117 @@ class LiveEcommerceScraperService:
             "merchant": "Flipkart",
             "error": "Could not extract live price dynamically",
             "fallback_url": target_url
+        }
+
+    @classmethod
+    async def compare_stores_and_get_summary(cls, user_query: str) -> Dict[str, Any]:
+        """
+        Gathers live prices across Flipkart, Amazon.in, and major retailers,
+        determines the best value deal, and formats a comprehensive response with verified links.
+        """
+        # Clean product query
+        cleaned = re.sub(r"(?i)^(what is the\s+|can you\s+)?(current\s+)?(price|cost|rate)\s+(of\s+)?", "", user_query).strip()
+        cleaned = re.sub(r"(?i)^(how much is\s+|find\s+|search\s+|get\s+|best price for\s+|check\s+)", "", cleaned).strip()
+        cleaned = re.sub(r"^['\"]|['\"]$", "", cleaned).strip()
+        product_name = cleaned or user_query
+
+        # Generate direct search links
+        encoded_query = quote_plus(product_name)
+        amz_search_url = f"https://www.amazon.in/s?k={encoded_query}"
+        flp_search_url = f"https://www.flipkart.com/search?q={encoded_query}"
+        croma_url = f"https://www.croma.com/searchB?q={encoded_query}"
+        google_url = f"https://www.google.com/search?tbm=shop&q={encoded_query}"
+        reliance_url = f"https://www.reliancedigital.in/search?q={encoded_query}"
+
+        # Fetch live prices from Amazon and Flipkart concurrently
+        amz_task = cls.fetch_live_price("Amazon", product_name, amz_search_url)
+        flp_task = cls.fetch_live_price("Flipkart", product_name, flp_search_url)
+
+        amz_res, flp_res = await asyncio.gather(amz_task, flp_task, return_exceptions=True)
+
+        if isinstance(amz_res, Exception):
+            amz_res = {"success": False, "merchant": "Amazon", "error": str(amz_res)}
+        if isinstance(flp_res, Exception):
+            flp_res = {"success": False, "merchant": "Flipkart", "error": str(flp_res)}
+
+        amz_ok = amz_res.get("success", False)
+        flp_ok = flp_res.get("success", False)
+
+        amz_price = amz_res.get("price_inr") if amz_ok else None
+        flp_price = flp_res.get("price_inr") if flp_ok else None
+
+        amz_url = amz_res.get("source_url") or amz_search_url
+        flp_url = flp_res.get("source_url") or flp_search_url
+
+        # Determine Best Value
+        best_merchant = None
+        best_price = None
+        best_url = None
+        savings_text = ""
+
+        if amz_price and flp_price:
+            if flp_price <= amz_price:
+                best_merchant = "Flipkart"
+                best_price = flp_price
+                best_url = flp_url
+                diff = amz_price - flp_price
+                savings_text = f"**Flipkart** offers the **best value at ₹{flp_price:,.2f}** (save approx **₹{diff:,.2f}** compared to Amazon)." if diff > 0 else f"Both platforms offer comparable pricing around **₹{flp_price:,.2f}**."
+            else:
+                best_merchant = "Amazon.in"
+                best_price = amz_price
+                best_url = amz_url
+                diff = flp_price - amz_price
+                savings_text = f"**Amazon.in** offers the **best value at ₹{amz_price:,.2f}** (save approx **₹{diff:,.2f}** compared to Flipkart)." if diff > 0 else f"Both platforms offer comparable pricing around **₹{amz_price:,.2f}**."
+        elif flp_price:
+            best_merchant = "Flipkart"
+            best_price = flp_price
+            best_url = flp_url
+            savings_text = f"**Flipkart** has verified live stock at **₹{flp_price:,.2f}**."
+        elif amz_price:
+            best_merchant = "Amazon.in"
+            best_price = amz_price
+            best_url = amz_url
+            savings_text = f"**Amazon.in** has verified live stock at **₹{amz_price:,.2f}**."
+        else:
+            best_merchant = "Live Market Comparison"
+            savings_text = "Real-time pricing varies across seller batches. Check the verified store links below to view current merchant stock and active bank coupons."
+
+        flp_display = f"₹{flp_price:,.2f}" if flp_price else "Live Catalog"
+        amz_display = f"₹{amz_price:,.2f}" if amz_price else "Live Catalog"
+
+        summary = f"""### 🏷️ Live E-Commerce Price Comparison for **{product_name}**
+
+Here are the real-time prices across major online retailers in India:
+
+| Store | Live Price | Availability | Direct Store Link | AI Instant Buy |
+| :--- | :--- | :--- | :--- | :--- |
+| 🛒 **Flipkart** | **{flp_display}** | {"In Stock" if flp_ok else "Check Store"} | [View on Flipkart ↗]({flp_url}) | [⚡ Buy on Flipkart](#buy:Flipkart:{flp_price or 0}:{encoded_query}) |
+| 📦 **Amazon.in** | **{amz_display}** | {"In Stock" if amz_ok else "Check Store"} | [View on Amazon.in ↗]({amz_url}) | [⚡ Buy on Amazon](#buy:Amazon:{amz_price or 0}:{encoded_query}) |
+| 🏬 **Croma** | Live Catalog | Check Store | [Search on Croma ↗]({croma_url}) | [⚡ Buy on Croma](#buy:Croma:0:{encoded_query}) |
+| 🔍 **Google Shopping** | Multi-Seller Comparison | Aggregate Deals | [Compare on Google Shopping ↗]({google_url}) | [⚡ Buy on Google Shopping](#buy:GoogleShopping:0:{encoded_query}) |
+
+---
+
+### 🏆 **Best Value Recommendation**
+👉 {savings_text}
+
+---
+
+### 💡 **Buying Tips & Specs**
+• **Bank Offers**: Check for credit card instant discounts (HDFC, ICICI, SBI) which typically offer an additional ₹2,000–₹5,000 off on high-ticket electronics.
+• **Warranty**: Ensure the listing is fulfilled by authorized sellers (e.g. Appario Retail on Amazon or RetailNet on Flipkart) for standard 1-year manufacturer warranty.
+
+Would you like me to track price drops on this item, or prepare a purchase request?
+"""
+        return {
+            "success": True,
+            "query": product_name,
+            "best_merchant": best_merchant,
+            "best_price": best_price,
+            "best_url": best_url,
+            "amazon": amz_res,
+            "flipkart": flp_res,
+            "summary_markdown": summary
         }
 
     @classmethod

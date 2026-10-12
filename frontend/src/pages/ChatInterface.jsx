@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { 
+  ShoppingCart, 
+  RefreshCw, 
+  ExternalLink, 
+  Shield, 
+  CheckCircle2, 
+  AlertTriangle, 
+  ArrowRight, 
+  Search,
+  Filter,
+  DollarSign,
+  PackageCheck,
+  Clock
+} from 'lucide-react';
 
 const ChatInterface = () => {
-  const [userInput, setUserInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-  const [structuredRequest, setStructuredRequest] = useState(null);
-  const [decision, setDecision] = useState(null);
-  const [payment, setPayment] = useState(null);
   const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionFeedback, setActionFeedback] = useState(null);
@@ -18,17 +28,36 @@ const ChatInterface = () => {
   const [customPriceInput, setCustomPriceInput] = useState('');
 
   const fetchHistory = async () => {
+    setLoading(true);
     try {
       const res = await axios.get('/api/requests');
-      setHistory(res.data);
+      setHistory(res.data || []);
     } catch (err) {
       console.error("Failed to fetch history", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchHistory();
   }, []);
+
+  // Filter for buying / ordered requests only (exclude subscription termination)
+  const isSubscription = (req) => {
+    const act = (req.action || '').toUpperCase();
+    const msg = (req.user_message || '').toLowerCase();
+    const merch = (req.merchant || '').toLowerCase();
+    return (
+      act.includes('SUBSCRIPTION') ||
+      msg.includes('subscription') ||
+      msg.includes('cancel') ||
+      msg.includes('terminate') ||
+      ['netflix', 'spotify', 'prime video', 'gym'].some(s => merch.includes(s) || msg.includes(s))
+    );
+  };
+
+  const buyingChats = history.filter(req => !isSubscription(req));
 
   const extractProductQuery = (message) => {
     if (!message) return '';
@@ -85,8 +114,7 @@ const ChatInterface = () => {
     MERCHANT_NOT_ALLOWED: 'Merchant is not on the user allowlist.',
     MERCHANT_BLOCKED: 'Merchant is explicitly blocked in security settings.',
     OUT_OF_STOCK_CART_MONITOR: 'Item out of stock. Saved in cart for continuous inventory tracking.',
-    ALL_POLICY_CONDITIONS_SATISFIED: 'All deterministic invariant checks and spend limits satisfied.',
-    SUBSCRIPTION_TERMINATOR_EXECUTED: 'Subscription terminated via verified merchant automation.'
+    ALL_POLICY_CONDITIONS_SATISFIED: 'All deterministic invariant checks and spend limits satisfied.'
   };
 
   const getStatusBadgeClass = (status) => {
@@ -208,258 +236,237 @@ const ChatInterface = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!userInput.trim()) return;
+  // Metrics
+  const totalOrdersCount = buyingChats.length;
+  const pendingApprovalsCount = buyingChats.filter(r => r.status === 'REQUIRES_APPROVAL' || r.status === 'PENDING').length;
+  const completedOrdersCount = buyingChats.filter(r => r.status === 'COMPLETED' || r.status === 'APPROVED').length;
+  const totalSpendINR = buyingChats.reduce((sum, r) => {
+    const val = r.amount_inr ? Number(r.amount_inr) : (r.amount_paise ? r.amount_paise / 100 : 0);
+    return sum + (isNaN(val) ? 0 : val);
+  }, 0);
 
-    setLoading(true);
-    setError(null);
-    setResult(null);
-    setStructuredRequest(null);
-    setDecision(null);
-    setPayment(null);
-
-    try {
-      const response = await axios.post('/api/chat', {
-        message: userInput.trim()
-      });
-
-      setResult(response.data);
-      if (response.data.intent && response.data.intent.action !== 'NONE') {
-        setStructuredRequest({
-          merchant: response.data.intent.merchant || 'Unknown',
-          amountInPaise: response.data.intent.amount_paise || 0,
-          currency: response.data.intent.currency || 'INR'
-        });
-        
-        const isApproved = !response.data.intent.requires_approval;
-        setDecision({
-          status: isApproved ? 'APPROVE' : 'REQUIRE_APPROVAL',
-          reason: isApproved ? 'Approved by deterministic policy engine' : 'Intent requires manual review'
-        });
-        
-        if (isApproved) {
-           setPayment({
-             transactionId: 'txn_' + Math.random().toString(36).substr(2, 9),
-             amount: response.data.intent.amount_paise || 0,
-             currency: response.data.intent.currency || 'INR',
-             timestamp: new Date().toISOString()
-           });
-        }
-        fetchHistory(); // Refresh history
-      }
-    } catch (err) {
-      setError(err.response?.data?.error || 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
+  // Filtered list
+  const filteredChats = buyingChats.filter(req => {
+    if (statusFilter !== 'ALL') {
+      if (statusFilter === 'REQUIRES_APPROVAL' && req.status !== 'REQUIRES_APPROVAL' && req.status !== 'PENDING') return false;
+      if (statusFilter === 'COMPLETED' && req.status !== 'COMPLETED' && req.status !== 'APPROVED') return false;
+      if (statusFilter === 'BLOCKED' && req.status !== 'BLOCKED' && req.status !== 'REJECTED') return false;
+      if (statusFilter === 'SCHEDULED' && req.status !== 'SCHEDULED') return false;
     }
-  };
-
-  const reset = () => {
-    setUserInput('');
-    setResult(null);
-    setError(null);
-    setStructuredRequest(null);
-    setDecision(null);
-    setPayment(null);
-  };
-
-  const getDecisionColor = (status) => {
-    switch (status) {
-      case 'APPROVE': return 'text-lime border-lime bg-lime/10';
-      case 'REQUIRE_APPROVAL': return 'text-yellow-400 border-yellow-400 bg-yellow-400/10';
-      case 'BLOCK': return 'text-red-500 border-red-500 bg-red-500/10';
-      default: return 'text-paper/50 border-white/10 bg-white/5';
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const msg = (req.user_message || '').toLowerCase();
+      const merch = (req.merchant || '').toLowerCase();
+      return msg.includes(q) || merch.includes(q);
     }
-  };
+    return true;
+  });
 
   return (
-    <div className="p-6 relative">
-      
-      <div className="relative z-10 mx-auto max-w-3xl px-6">
-        <div className="mb-12">
-          <p className="font-mono text-xs font-bold tracking-widest text-lime uppercase mb-4">( Interface )</p>
-          <h1 className="font-display text-5xl font-bold text-paper mb-4 tracking-tighter">AI Financial Chat</h1>
-          <p className="text-paper/60 text-lg">
-            Ask the AI agent to perform financial actions. Watch how deterministic policies are applied in real-time.
-          </p>
-        </div>
-
-        {error && <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 font-medium">{error}</div>}
-        {result && structuredRequest && (
-          <div className="mb-6 p-4 rounded-lg bg-lime/10 border border-lime/20 text-lime font-medium">
-            Request processed successfully!
+    <div className="p-6 sm:p-8 max-w-6xl mx-auto relative">
+      {/* Page Header */}
+      <div className="mb-10">
+        <p className="font-mono text-xs font-bold tracking-widest text-lime uppercase mb-3">
+          ( COMMERCE & PROCUREMENT )
+        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="font-display text-4xl sm:text-5xl font-bold text-paper tracking-tighter flex items-center gap-3">
+              <span>Buying & Orders</span>
+              <span className="text-xl sm:text-2xl px-3 py-1 rounded-full bg-lime/10 text-lime border border-lime/20 font-mono text-sm">
+                Live Procurement
+              </span>
+            </h1>
+            <p className="text-paper/60 text-base sm:text-lg mt-2 max-w-3xl">
+              Track shopping & purchase chats, verify real-time item pricing across Amazon, Flipkart, & Myntra, and authorize payments with deterministic guardrails.
+            </p>
           </div>
-        )}
-
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md mb-12">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            <div className="flex flex-col gap-2">
-              <label htmlFor="user_input" className="font-mono text-sm tracking-wide text-paper/70">Your Request</label>
-              <textarea
-                id="user_input"
-                rows="3"
-                className="bg-ink/50 border border-white/10 rounded-xl px-4 py-3 text-paper font-medium focus:border-lime focus:outline-none transition-colors resize-none placeholder-paper/20"
-                placeholder='e.g., "Buy a keyboard from Amazon under 2000 INR"'
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                disabled={loading}
-                maxLength="200"
-              />
-            </div>
-            
-            <div className="flex gap-4">
-              <button type="submit" className="flex-1 inline-flex items-center justify-center rounded-full font-bold bg-lime text-ink hover:brightness-95 transition-all h-12 px-6" disabled={loading}>
-                {loading ? 'Processing...' : 'Send Request'}
-              </button>
-              <button type="button" onClick={reset} className="inline-flex items-center justify-center rounded-full font-bold border border-white/20 text-paper hover:bg-white/5 transition-colors h-12 px-8" disabled={loading}>
-                Clear
-              </button>
-            </div>
-          </form>
-
-          {structuredRequest && (
-            <div className="mt-8 pt-8 border-t border-white/10">
-              <h2 className="font-mono text-sm tracking-widest uppercase text-paper/50 mb-6">Parsed Intent</h2>
-              <div className="grid grid-cols-3 gap-4 bg-ink/30 rounded-xl p-4 border border-white/5">
-                <div>
-                  <p className="text-paper/40 text-xs font-mono mb-1">Merchant</p>
-                  <p className="font-medium text-paper">{structuredRequest.merchant}</p>
-                </div>
-                <div>
-                  <p className="text-paper/40 text-xs font-mono mb-1">Amount</p>
-                  <p className="font-medium text-paper">₹{(structuredRequest.amountInPaise / 100).toFixed(2)}</p>
-                </div>
-                <div>
-                  <p className="text-paper/40 text-xs font-mono mb-1">Currency</p>
-                  <p className="font-medium text-paper">{structuredRequest.currency}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {decision && (
-            <div className="mt-8">
-              <h2 className="font-mono text-sm tracking-widest uppercase text-paper/50 mb-6">Policy Decision</h2>
-              <div className={`rounded-xl p-6 border ${getDecisionColor(decision.status)}`}>
-                <div className="font-bold mb-2 flex items-center gap-2">
-                  {decision.status === 'APPROVE' ? '✅ APPROVED' :
-                   decision.status === 'REQUIRE_APPROVAL' ? '⏳ REQUIRES APPROVAL' :
-                   '❌ BLOCKED'}
-                </div>
-                <p className="text-sm font-medium opacity-80">{decision.reason}</p>
-              </div>
-            </div>
-          )}
-
-          {payment && (
-            <div className="mt-8">
-              <h2 className="font-mono text-sm tracking-widest uppercase text-paper/50 mb-6">Payment Execution</h2>
-              <div className="bg-lime/5 border border-lime/20 rounded-xl p-6">
-                <p className="font-bold text-lime mb-4">✅ Success</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-paper/40 text-xs font-mono mb-1">Txn ID</p>
-                    <p className="text-sm font-mono text-paper truncate">{payment.transactionId}</p>
-                  </div>
-                  <div>
-                    <p className="text-paper/40 text-xs font-mono mb-1">Amount Executed</p>
-                    <p className="text-sm font-mono text-paper truncate">₹{(payment.amount / 100).toFixed(2)} {payment.currency}</p>
-                  </div>
-                  <div>
-                    <p className="text-paper/40 text-xs font-mono mb-1">Timestamp</p>
-                    <p className="text-sm font-mono text-paper truncate">{new Date(payment.timestamp).toLocaleTimeString()}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {!result && !loading && (
-            <div className="mt-8 pt-8 border-t border-white/5 text-center text-paper/30 font-medium text-sm">
-              Submit a request to see the deterministic policy evaluation pipeline.
-            </div>
-          )}
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="font-display text-2xl font-bold text-paper">Request History</h2>
-              <p className="text-paper/40 text-xs font-mono mt-1">Click any request to view full details, check on Amazon, and authorize.</p>
-            </div>
-            <button
-              onClick={fetchHistory}
-              className="text-xs font-mono text-lime/80 hover:text-lime hover:underline flex items-center gap-1.5"
-            >
-              <span>↻ Refresh</span>
-            </button>
-          </div>
-
-          {history.length === 0 ? (
-            <p className="text-paper/40 font-medium">No financial requests found yet.</p>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {history.map((req) => {
-                let intent = {};
-                try {
-                  intent = JSON.parse(req.intent_json || '{}');
-                } catch {
-                  intent = {};
-                }
-                const merchant = req.merchant || intent.merchant || 'Unknown Merchant';
-                const action = req.action || intent.action || 'PURCHASE';
-                const amountFormatted = req.amount_inr 
-                  ? `₹${Number(req.amount_inr).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
-                  : req.amount_paise 
-                  ? `₹${(req.amount_paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
-                  : null;
-
-                return (
-                  <div 
-                    key={req.id} 
-                    onClick={() => {
-                      setSelectedRequest(req);
-                      setActionFeedback(null);
-                    }}
-                    className="group bg-white/5 border border-white/10 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/10 hover:border-lime/40 cursor-pointer transition-all active:scale-[0.99]"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-paper font-medium mb-1.5 group-hover:text-lime transition-colors">
-                        "{req.user_message}"
-                      </p>
-                      <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-paper/50">
-                        <span className="text-paper/70 font-semibold">{action}</span>
-                        <span>•</span>
-                        <span className="text-paper/70">{merchant}</span>
-                        {amountFormatted && (
-                          <>
-                            <span>•</span>
-                            <span className="text-lime font-bold">{amountFormatted}</span>
-                          </>
-                        )}
-                        <span>•</span>
-                        <span>{req.created_at ? new Date(req.created_at).toLocaleString() : ''}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase ${getStatusBadgeClass(req.status)}`}>
-                        {req.status === 'REQUIRES_APPROVAL' && '● '}
-                        {req.status}
-                      </span>
-                      <span className="text-paper/30 group-hover:text-lime group-hover:translate-x-1 transition-all text-sm font-bold">
-                        →
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          <button
+            onClick={fetchHistory}
+            disabled={loading}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-paper hover:text-lime transition-all self-start sm:self-auto shadow-sm"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
         </div>
       </div>
 
-      {/* Request Details & E-Commerce Verification Modal */}
+      {/* KPI Metrics Summary Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
+          <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <ShoppingCart className="w-3.5 h-3.5 text-lime" />
+            <span>Total Orders</span>
+          </p>
+          <div className="flex items-baseline gap-2">
+            <span className="font-display text-3xl font-bold text-paper">{totalOrdersCount}</span>
+            <span className="text-xs font-mono text-paper/40">purchases</span>
+          </div>
+        </div>
+
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
+          <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-amber-400" />
+            <span>Pending Review</span>
+          </p>
+          <div className="flex items-baseline gap-2">
+            <span className="font-display text-3xl font-bold text-amber-400">{pendingApprovalsCount}</span>
+            <span className="text-xs font-mono text-amber-400/70">awaiting check</span>
+          </div>
+        </div>
+
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
+          <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <PackageCheck className="w-3.5 h-3.5 text-lime" />
+            <span>Executed / Settled</span>
+          </p>
+          <div className="flex items-baseline gap-2">
+            <span className="font-display text-3xl font-bold text-lime">{completedOrdersCount}</span>
+            <span className="text-xs font-mono text-lime/70">completed</span>
+          </div>
+        </div>
+
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
+          <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <DollarSign className="w-3.5 h-3.5 text-lime" />
+            <span>Tracked Spend</span>
+          </p>
+          <div className="flex items-baseline gap-2">
+            <span className="font-display text-3xl font-bold text-paper">
+              ₹{Math.round(totalSpendINR).toLocaleString('en-IN')}
+            </span>
+            <span className="text-xs font-mono text-paper/40">INR</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
+        {/* Status Filter Pills */}
+        <div className="flex flex-wrap items-center gap-1.5 p-1 bg-ink/40 border border-white/10 rounded-xl">
+          {['ALL', 'REQUIRES_APPROVAL', 'COMPLETED', 'BLOCKED', 'SCHEDULED'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setStatusFilter(tab)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
+                statusFilter === tab
+                  ? 'bg-lime text-ink font-bold shadow-sm'
+                  : 'text-paper/60 hover:text-paper hover:bg-white/5'
+              }`}
+            >
+              {tab.replace('_', ' ')}
+            </button>
+          ))}
+        </div>
+
+        {/* Search Input */}
+        <div className="relative w-full sm:w-72">
+          <Search className="w-4 h-4 text-paper/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search orders or merchant..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-ink/40 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs font-mono text-paper placeholder-paper/30 focus:border-lime focus:outline-none transition-colors"
+          />
+        </div>
+      </div>
+
+      {/* Orders List */}
+      <div className="flex flex-col gap-3.5">
+        {filteredChats.map((req) => {
+          let intent = {};
+          try {
+            intent = JSON.parse(req.intent_json || '{}');
+          } catch {
+            intent = {};
+          }
+          const merchant = req.merchant || intent.merchant || 'Amazon.in';
+          const action = req.action || intent.action || 'PURCHASE';
+          const amountFormatted = req.amount_inr 
+            ? `₹${Number(req.amount_inr).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+            : req.amount_paise 
+            ? `₹${(req.amount_paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+            : null;
+
+          const storeInfo = getStoreInfo(req);
+          const isPending = req.status === 'REQUIRES_APPROVAL' || req.status === 'PENDING';
+
+          return (
+            <div 
+              key={req.id} 
+              onClick={() => {
+                setSelectedRequest(req);
+                setActionFeedback(null);
+              }}
+              className="group bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-lime/40 cursor-pointer transition-all active:scale-[0.99] shadow-sm"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2.5 mb-2">
+                  <span className={`w-2 h-2 rounded-full ${isPending ? 'bg-amber-400 shadow-[0_0_8px_1px] shadow-amber-400/60' : 'bg-lime shadow-[0_0_8px_1px] shadow-lime/60'}`}></span>
+                  <p className="text-paper font-semibold text-base sm:text-lg group-hover:text-lime transition-colors">
+                    "{req.user_message}"
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-paper/50">
+                  <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-paper/80 font-bold">
+                    {merchant}
+                  </span>
+                  <span>•</span>
+                  <span className="text-paper/60 uppercase">{action}</span>
+                  {amountFormatted && (
+                    <>
+                      <span>•</span>
+                      <span className="text-lime font-bold text-sm">{amountFormatted}</span>
+                    </>
+                  )}
+                  <span>•</span>
+                  <span>{req.created_at ? new Date(req.created_at).toLocaleString() : ''}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 flex-shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/5">
+                {storeInfo && (
+                  <a
+                    href={storeInfo.primaryUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono bg-amber-400/10 text-amber-300 hover:bg-amber-400/20 border border-amber-400/20 transition-all"
+                    title={`Verify directly on ${storeInfo.primaryStore}`}
+                  >
+                    <span>Check Store</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+
+                <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase font-mono ${getStatusBadgeClass(req.status)}`}>
+                  {req.status === 'REQUIRES_APPROVAL' && '● '}
+                  {req.status}
+                </span>
+
+                <span className="text-paper/40 group-hover:text-lime group-hover:translate-x-1 transition-all text-sm font-bold pl-1">
+                  →
+                </span>
+              </div>
+            </div>
+          );
+        })}
+
+        {filteredChats.length === 0 && !loading && (
+          <div className="py-16 text-center bg-white/5 border border-white/10 rounded-2xl">
+            <ShoppingCart className="w-10 h-10 text-paper/20 mx-auto mb-3" />
+            <p className="text-paper/60 font-semibold text-base">No buying or ordered chats found.</p>
+            <p className="text-paper/30 text-xs font-mono mt-1">
+              Ask the AI agent in the chat to purchase or search for items on Amazon, Flipkart, or Myntra.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Request Details & Store Verification Modal */}
       {selectedRequest && (() => {
         const storeInfo = getStoreInfo(selectedRequest);
         const reasons = parseReasons(selectedRequest.policy_reasons);
@@ -477,14 +484,14 @@ const ChatInterface = () => {
             onClick={() => setSelectedRequest(null)}
           >
             <div 
-              className="bg-white dark:bg-[#121412] border border-black/10 dark:border-white/20 rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative my-auto max-h-[82vh] overflow-y-auto"
+              className="bg-white dark:bg-[#121412] border border-black/10 dark:border-white/20 rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative my-auto max-h-[85vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div>
                   <span className="font-mono text-xs font-bold tracking-widest text-lime uppercase">
-                    ( Request Details • {selectedRequest.action || 'PURCHASE'} )
+                    ( ORDER DETAILS • {selectedRequest.action || 'PURCHASE'} )
                   </span>
                   <h3 className="text-xl sm:text-2xl font-display font-bold text-paper mt-1">
                     "{selectedRequest.user_message}"
@@ -492,14 +499,14 @@ const ChatInterface = () => {
                 </div>
                 <button
                   onClick={() => setSelectedRequest(null)}
-                  className="text-paper/50 hover:text-paper hover:bg-white/10 rounded-full w-9 h-9 flex items-center justify-center transition-colors text-lg flex-shrink-0"
+                  className="text-paper/50 hover:text-paper hover:bg-black/5 dark:hover:bg-white/10 rounded-full w-9 h-9 flex items-center justify-center transition-colors text-lg flex-shrink-0"
                 >
                   ✕
                 </button>
               </div>
 
               {/* Status and Timestamp Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-white/10 mb-6 text-xs font-mono">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-black/5 dark:border-white/10 mb-6 text-xs font-mono">
                 <div className="flex items-center gap-2">
                   <span className="text-paper/40">Status:</span>
                   <span className={`px-2.5 py-0.5 rounded-full font-bold uppercase ${getStatusBadgeClass(selectedRequest.status)}`}>
@@ -544,9 +551,7 @@ const ChatInterface = () => {
                       className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs bg-amber-400 text-black hover:bg-amber-300 transition-all shadow-md active:scale-95"
                     >
                       <span>Check on {storeInfo.primaryStore}</span>
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
+                      <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                   </div>
                 </div>
@@ -692,7 +697,7 @@ const ChatInterface = () => {
 
               {/* Action Bar (Human-in-the-loop Approval) */}
               {isPendingApproval ? (
-                <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-3">
+                <div className="pt-4 border-t border-black/5 dark:border-white/10 flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => handleDecision(selectedRequest.id, 'APPROVE')}
                     disabled={actionLoading}
@@ -709,10 +714,10 @@ const ChatInterface = () => {
                   </button>
                 </div>
               ) : (
-                <div className="pt-4 border-t border-white/10 flex justify-end">
+                <div className="pt-4 border-t border-black/5 dark:border-white/10 flex justify-end">
                   <button
                     onClick={() => setSelectedRequest(null)}
-                    className="px-6 py-2.5 rounded-xl border border-white/20 text-paper font-semibold hover:bg-white/10 transition-colors text-sm"
+                    className="px-6 py-2.5 rounded-xl border border-black/10 dark:border-white/20 text-paper font-semibold hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-sm"
                   >
                     Close
                   </button>

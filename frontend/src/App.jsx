@@ -13,6 +13,7 @@ import PricingPage from './pages/PricingPage';
 import InsightsPage from './pages/InsightsPage';
 import InsightDetailPage from './pages/InsightDetailPage';
 import ChatInterface from './pages/ChatInterface';
+import SubscriptionTerminatorPage from './pages/SubscriptionTerminatorPage';
 import SidebarLayout from './components/SidebarLayout';
 import QnAPage from './pages/QnAPage';
 import { ThemeProvider } from './context/ThemeContext';
@@ -40,11 +41,13 @@ function AppContent({ isLoading }) {
               <Route path="/insights" element={<InsightsPage />} />
               <Route path="/insights/:id" element={<InsightDetailPage />} />
               <Route path="/chat" element={<Navigate to="/dashboard/chat" replace />} />
+              <Route path="/subscriptions" element={<Navigate to="/dashboard/subscriptions" replace />} />
               <Route path="/dashboard" element={<SidebarLayout />}>
                 <Route index element={<Navigate to="chat" replace />} />
                 <Route path="chat" element={<QnAPage />} />
                 <Route path="chat/:id" element={<QnAPage />} />
                 <Route path="request" element={<ChatInterface />} />
+                <Route path="subscriptions" element={<SubscriptionTerminatorPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

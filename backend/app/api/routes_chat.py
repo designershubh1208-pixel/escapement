@@ -52,9 +52,32 @@ async def send_chat_message(req: ChatMessageRequest, db: Session = Depends(get_d
     db.add(user_msg_record)
     db.commit()
 
-    # 3. AI reasoning layer (Generates conversational response & structured intent)
-    ai_response_text = await ai_provider.general_qa(req.message)
+    # 3. AI reasoning layer (Generates conversational response, multi-store price comparison, & structured intent)
     intent = await ai_provider.extract_intent(req.message)
+
+    # Detect if user is asking about product pricing, availability, or deals across e-commerce stores
+    price_triggers = [
+        "price", "cost", "how much", "rate", "best value", "deal", "deals", 
+        "cheap", "cheapest", "discount", "where to buy", "compare price", "best buy",
+        "flipkart or amazon", "amazon or flipkart", "current price"
+    ]
+    product_indicators = [
+        "laptop", "phone", "rtx", "gpu", "keyboard", "monitor", "iphone", 
+        "macbook", "headphone", "earphone", "tv", "playstation", "ps5", 
+        "omen", "victus", "keychron", "ipad", "tablet", "watch"
+    ]
+    text_lower = req.message.lower().strip()
+    is_price_inquiry = any(t in text_lower for t in price_triggers) or (
+        any(p in text_lower for p in product_indicators) and any(w in text_lower for w in ["find", "search", "check", "current", "what is", "spec", "vram", "gb"])
+    )
+
+    if is_price_inquiry and (not intent or intent.action not in ["PURCHASE", "CANCEL_SUBSCRIPTION"]):
+        logger.info(f"Detected e-commerce price inquiry: '{req.message}'. Scraping multi-store live prices...")
+        from app.services.live_ecommerce_scraper import LiveEcommerceScraperService
+        comparison = await LiveEcommerceScraperService.compare_stores_and_get_summary(req.message)
+        ai_response_text = comparison.get("summary_markdown")
+    else:
+        ai_response_text = await ai_provider.general_qa(req.message)
 
     has_financial_intent = False
     decision = "NONE"

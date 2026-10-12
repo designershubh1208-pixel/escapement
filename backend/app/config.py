@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = "http://localhost:11434/v1"
     OLLAMA_API_KEY: str = "ollama"
     OLLAMA_MODEL: str = "richardyoung/qwen2.5-14b-instruct-abliterated"
-    AI_TIMEOUT_SECONDS: int = 10
+    AI_TIMEOUT_SECONDS: int = 60
     
     # Blockchain / EVM Configuration
     EVM_RPC_URL: str = "http://127.0.0.1:8545"
