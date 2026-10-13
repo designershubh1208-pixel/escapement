@@ -5,13 +5,21 @@ from app.models.financial import Subscription
 
 def test_subscription_terminator_cancels_service(test_db):
     """Core Use Case 16.2: Cancel Netflix subscription"""
-    SubscriptionService.ensure_seed_subscriptions(test_db, "user_1")
-    
-    # Verify initially active
     netflix = test_db.query(Subscription).filter(
         Subscription.user_id == "user_1",
         Subscription.service_name == "Netflix"
     ).first()
+    if not netflix:
+        netflix = Subscription(
+            user_id="user_1",
+            service_name="Netflix",
+            amount_paise=64900,
+            status="ACTIVE"
+        )
+        test_db.add(netflix)
+        test_db.commit()
+        test_db.refresh(netflix)
+    
     assert netflix.status == "ACTIVE"
 
     # Cancel via service
