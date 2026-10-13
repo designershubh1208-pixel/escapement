@@ -81,21 +81,21 @@ export default function StarterPayHero() {
             <span>Autonomous Financial Agent</span>
           </motion.div>
 
-          {/* Headline and See More CTA row */}
+          {/* Headline and Action Buttons row */}
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 lg:gap-12 mb-14 sm:mb-20">
-            {/* Original Display Headline: Secure autonomous financial agent */}
+            {/* Display Headline with larger fluid scale */}
             <div className="max-w-4xl">
-              <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[84px] xl:text-[96px] font-bold tracking-tight leading-[0.92] text-paper">
+              <h1 className="font-display text-6xl sm:text-7xl md:text-8xl lg:text-[104px] xl:text-[120px] font-bold tracking-[-0.04em] leading-[0.88] text-paper">
                 <span className="block">Secure</span>
                 <span className="block">autonomous</span>
-                <span className="inline-flex items-center gap-3 sm:gap-4 flex-wrap">
+                <span className="inline-flex items-center gap-3 sm:gap-5 flex-wrap">
                   <span className="text-lime">financial</span>
                   <span className="text-lime">agent.</span>
                 </span>
               </h1>
             </div>
 
-            {/* Action Buttons: Only 'See more' pill button (without 'Create account') */}
+            {/* Action Buttons: 'See more' + 'Chat ↗' button */}
             <motion.div 
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -104,9 +104,17 @@ export default function StarterPayHero() {
             >
               <Link
                 to="/services"
-                className="inline-flex items-center justify-center px-7 sm:px-8 h-12 sm:h-13 rounded-full text-xs sm:text-sm font-semibold tracking-tight border border-white/20 bg-white/5 hover:bg-white/10 hover:border-lime/40 text-paper transition-all duration-200 shadow-sm"
+                className="inline-flex items-center justify-center px-7 sm:px-8 h-12 sm:h-14 rounded-full text-xs sm:text-sm font-semibold tracking-tight border border-white/20 bg-white/5 hover:bg-white/10 hover:border-lime/40 text-paper transition-all duration-200 shadow-sm"
               >
                 See more
+              </Link>
+
+              <Link
+                to="/chat"
+                className="group inline-flex items-center justify-center gap-2 px-7 sm:px-8 h-12 sm:h-14 rounded-full text-xs sm:text-sm font-bold tracking-tight bg-lime text-ink hover:brightness-105 transition-all duration-200 shadow-lg shadow-lime/20 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <span>Chat</span>
+                <span className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">↗</span>
               </Link>
             </motion.div>
           </div>
