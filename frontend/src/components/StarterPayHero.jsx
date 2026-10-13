@@ -42,18 +42,21 @@ export default function StarterPayHero() {
     <section className="relative w-full min-h-screen bg-ink flex flex-col justify-between overflow-hidden">
       
       {/* ============================================================== */}
-      {/* TOP ART BACKGROUND: Full-Width 3D Neon Ribbon Flow */}
+      {/* TOP ART BACKGROUND: Emerald/Lime Green 3D Fluid Flow */}
       {/* ============================================================== */}
       <div className="relative w-full h-[52vh] sm:h-[58vh] md:h-[62vh] min-h-[380px] overflow-hidden select-none">
-        {/* Full Edge-to-Edge Abstract 3D Wave */}
+        {/* Full Edge-to-Edge Emerald & Lime Green 3D Wave */}
         <img 
-          src="/hero-wave.jpg" 
-          alt="Neural Routing 3D Wave Visual" 
+          src="/hero-wave-lime.jpg" 
+          alt="DeFAI Sentinel Neural Flow" 
           className="w-full h-full object-cover object-center scale-[1.02]"
         />
 
         {/* Crisp horizontal refraction beam across the top header zone */}
-        <div className="absolute top-[88px] inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none" />
+        <div className="absolute top-[88px] inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-lime/40 to-transparent pointer-events-none" />
+
+        {/* Ambient green glow accent */}
+        <div className="absolute left-1/3 top-1/4 w-[40vw] h-[30vh] rounded-full bg-lime/10 blur-[100px] pointer-events-none" />
 
         {/* Seamless bottom fade into body canvas */}
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent pointer-events-none" />
@@ -61,63 +64,49 @@ export default function StarterPayHero() {
       </div>
 
       {/* ============================================================== */}
-      {/* BOTTOM CONTENT: Typography, CTAs & Full-Width Partner Logos */}
+      {/* BOTTOM CONTENT: Original Heading, Clean CTAs & Trust Wall */}
       {/* ============================================================== */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 -mt-16 sm:-mt-24 md:-mt-32 pb-12 sm:pb-16 flex-1 flex flex-col justify-between">
         
-        {/* Chip + Headline + CTA Section */}
+        {/* Chip + Original Headline + See More Button */}
         <div>
           {/* Mini Badge */}
           <motion.div 
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="inline-flex items-center gap-2 mb-4 sm:mb-6 text-xs sm:text-sm font-medium tracking-wide text-paper/70"
+            className="inline-flex items-center gap-2.5 mb-4 sm:mb-6 text-xs sm:text-sm font-mono font-bold tracking-wider text-paper/70 uppercase"
           >
-            <span className="text-amber-500 dark:text-orange-400 text-sm">⚡</span>
-            <span>Neural Routing Active, 99.98% Efficiency</span>
+            <span className="size-2 rounded-full bg-lime shadow-[0_0_10px_2px] shadow-lime/70" />
+            <span>Autonomous Financial Agent</span>
           </motion.div>
 
-          {/* Headline and CTAs row */}
+          {/* Headline and See More CTA row */}
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 lg:gap-12 mb-14 sm:mb-20">
-            {/* Display Headline */}
+            {/* Original Display Headline: Secure autonomous financial agent */}
             <div className="max-w-4xl">
-              <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[88px] xl:text-[98px] font-extrabold tracking-[-0.035em] leading-[0.92] text-paper">
-                <span className="block">Global Transfers</span>
-                <span className="inline-flex items-center gap-3 sm:gap-5 flex-wrap">
-                  <span className="inline-block transform translate-y-[-2px] text-paper font-normal text-4xl sm:text-6xl lg:text-[80px]">
-                    →
-                  </span>
-                  <span>managed by AI.</span>
+              <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[84px] xl:text-[96px] font-bold tracking-tight leading-[0.92] text-paper">
+                <span className="block">Secure</span>
+                <span className="block">autonomous</span>
+                <span className="inline-flex items-center gap-3 sm:gap-4 flex-wrap">
+                  <span className="text-lime">financial</span>
+                  <span className="text-lime">agent.</span>
                 </span>
               </h1>
             </div>
 
-            {/* Action Buttons */}
+            {/* Action Buttons: Only 'See more' pill button (without 'Create account') */}
             <motion.div 
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               className="flex items-center gap-3 sm:gap-4 shrink-0"
             >
-              {/* Secondary Pill Button */}
               <Link
                 to="/services"
-                className="inline-flex items-center justify-center px-6 sm:px-7 h-12 sm:h-13 rounded-full text-xs sm:text-sm font-semibold tracking-tight border border-white/15 bg-white/5 hover:bg-white/10 text-paper transition-all duration-200 shadow-sm"
+                className="inline-flex items-center justify-center px-7 sm:px-8 h-12 sm:h-13 rounded-full text-xs sm:text-sm font-semibold tracking-tight border border-white/20 bg-white/5 hover:bg-white/10 hover:border-lime/40 text-paper transition-all duration-200 shadow-sm"
               >
                 See more
-              </Link>
-
-              {/* Primary Sunrise Gradient Button */}
-              <Link
-                to="/register"
-                className="group relative inline-flex items-center justify-center px-6 sm:px-8 h-12 sm:h-13 rounded-full text-xs sm:text-sm font-bold tracking-tight text-zinc-950 transition-all duration-300 overflow-hidden shadow-lg hover:shadow-orange-500/25 hover:scale-[1.02] active:scale-[0.98]"
-                style={{
-                  background: 'linear-gradient(105deg, #f97316 0%, #fb923c 45%, #fca5a5 100%)'
-                }}
-              >
-                <span className="relative z-10">Create your account</span>
-                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
             </motion.div>
           </div>
