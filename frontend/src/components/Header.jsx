@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Logo from './Logo';
 import ThemeToggle from './ThemeToggle';
+import ProfileDropdown from './ProfileDropdown';
 import { useAuth } from '../context/AuthContext';
-import { User, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-6">
@@ -34,23 +36,38 @@ const Header = () => {
           <ThemeToggle />
           
           {isAuthenticated ? (
-            <div className="flex items-center gap-2">
-              <Link 
-                to="/dashboard/chat" 
-                className="inline-flex items-center gap-2 rounded-full font-bold tracking-tight bg-white/10 hover:bg-white/15 text-paper border border-white/10 h-10 px-4 text-xs transition-colors shadow-sm"
-              >
-                <div className="w-5 h-5 rounded-full bg-lime text-ink flex items-center justify-center font-bold text-[10px]">
-                  {user?.name ? user.name[0].toUpperCase() : 'U'}
-                </div>
-                <span className="max-w-[100px] truncate">{user?.name || user?.phone_number || 'Dashboard'}</span>
-              </Link>
-              <button
-                onClick={logout}
-                title="Sign Out"
-                className="h-10 w-10 rounded-full flex items-center justify-center bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-paper/60 border border-white/10 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
+            <div className="relative">
+              <div className="flex items-center gap-2">
+                <button 
+                  type="button"
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className={`inline-flex items-center gap-2 rounded-full font-bold tracking-tight border h-10 px-4 text-xs transition-all shadow-sm cursor-pointer group ${
+                    isProfileOpen 
+                      ? 'bg-white/20 border-lime/40 text-paper ring-2 ring-lime/20' 
+                      : 'bg-white/10 hover:bg-white/15 text-paper border-white/10'
+                  }`}
+                  title="View Profile Details"
+                >
+                  <div className="w-5 h-5 rounded-full bg-lime text-ink flex items-center justify-center font-bold text-[10px] group-hover:scale-105 transition-transform">
+                    {user?.name ? user.name[0].toUpperCase() : 'U'}
+                  </div>
+                  <span className="max-w-[120px] truncate">{user?.name || user?.phone_number || 'Dashboard'}</span>
+                </button>
+                <button
+                  onClick={logout}
+                  title="Sign Out"
+                  className="h-10 w-10 rounded-full flex items-center justify-center bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-paper/60 border border-white/10 transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Anchored Profile Dropdown */}
+              <ProfileDropdown 
+                isOpen={isProfileOpen} 
+                onClose={() => setIsProfileOpen(false)} 
+                position="bottom-right" 
+              />
             </div>
           ) : (
             <div className="flex items-center gap-2">

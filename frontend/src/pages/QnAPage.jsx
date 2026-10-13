@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ShoppingCart, ExternalLink, Zap } from 'lucide-react';
+import { ShoppingCart, ExternalLink, Zap, Copy, Check, Edit2 } from 'lucide-react';
 
 const FormattedChatMessage = ({ content, onBuyAction, actionLoading }) => {
   if (!content) return null;
@@ -183,7 +183,59 @@ const QnAPage = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
+  const [editingMsgIndex, setEditingMsgIndex] = useState(null);
+  const [editingMsgContent, setEditingMsgContent] = useState('');
   const messagesEndRef = useRef(null);
+
+  const handleCopy = (text, clipId) => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopiedId(clipId);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleSaveAndResend = async (index, newText) => {
+    const trimmed = newText.trim();
+    if (!trimmed || loading) return;
+    setEditingMsgIndex(null);
+
+    // Keep messages before this index, replace this user message, and request new response
+    const historyBefore = messages.slice(0, index);
+    const updatedMessages = [...historyBefore, { role: 'user', content: trimmed }];
+    setMessages(updatedMessages);
+    setLoading(true);
+
+    try {
+      const response = await axios.post('/api/chat', { 
+        message: trimmed,
+        session_id: id || null
+      });
+      
+      setMessages([...updatedMessages, { role: 'assistant', content: response.data.response }]);
+      
+      if (response.data.hasFinancialIntent) {
+        setMessages(prev => [...prev, { role: 'assistant', content: '⚡ Financial intent detected. Redirecting to Buying & Orders page...' }]);
+        setTimeout(() => {
+          navigate('/dashboard/request');
+        }, 1200);
+      } else if (!id && response.data.session_id) {
+        navigate(`/dashboard/chat/${response.data.session_id}`);
+      }
+    } catch (error) {
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -292,25 +344,120 @@ const QnAPage = () => {
         className="flex-1 overflow-y-auto mb-6 pr-2 space-y-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         data-lenis-prevent
       >
-        {messages.map((msg, idx) => (
-          <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] rounded-2xl p-4 sm:p-5 ${
-              msg.role === 'user' 
-                ? 'bg-lime text-ink font-medium shadow-sm' 
-                : 'bg-white/5 border border-white/10 text-paper backdrop-blur-md shadow-sm'
-            }`}>
-              {msg.role === 'user' ? (
-                msg.content
-              ) : (
-                <FormattedChatMessage 
-                  content={msg.content} 
-                  onBuyAction={handleTriggerBuy}
-                  actionLoading={loading}
-                />
-              )}
+        {messages.map((msg, idx) => {
+          const isUser = msg.role === 'user';
+          const isEditingThis = editingMsgIndex === idx;
+
+          if (isUser && isEditingThis) {
+            return (
+              <div key={idx} className="flex justify-end">
+                <div className="w-full sm:min-w-[360px] max-w-xl bg-white/10 dark:bg-[#181a18] border border-lime/40 rounded-2xl p-4 shadow-xl space-y-3">
+                  <div className="flex items-center justify-between text-xs font-mono text-paper/60">
+                    <span className="flex items-center gap-1.5 font-bold text-lime">
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>Edit message</span>
+                    </span>
+                    <span className="text-[10px] text-paper/40">Enter to resend • Esc to cancel</span>
+                  </div>
+                  <textarea
+                    value={editingMsgContent}
+                    onChange={(e) => setEditingMsgContent(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSaveAndResend(idx, editingMsgContent);
+                      }
+                      if (e.key === 'Escape') {
+                        setEditingMsgIndex(null);
+                      }
+                    }}
+                    autoFocus
+                    rows={3}
+                    className="w-full bg-ink/70 border border-white/15 rounded-xl p-3 text-sm text-paper focus:outline-none focus:border-lime resize-none"
+                  />
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditingMsgIndex(null)}
+                      className="px-3 py-1.5 rounded-xl text-xs font-mono text-paper/70 hover:bg-white/10 transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveAndResend(idx, editingMsgContent)}
+                      disabled={!editingMsgContent.trim() || loading}
+                      className="px-4 py-1.5 rounded-xl text-xs font-mono bg-lime text-ink font-bold hover:brightness-105 active:scale-95 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                    >
+                      Save & Resend
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div key={idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+              <div className={`group relative max-w-[85%] flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+                <div className={`rounded-2xl p-4 sm:p-5 w-full ${
+                  isUser 
+                    ? 'bg-lime text-ink font-medium shadow-sm whitespace-pre-wrap' 
+                    : 'bg-white/5 border border-white/10 text-paper backdrop-blur-md shadow-sm'
+                }`}>
+                  {isUser ? (
+                    msg.content
+                  ) : (
+                    <FormattedChatMessage 
+                      content={msg.content} 
+                      onBuyAction={handleTriggerBuy}
+                      actionLoading={loading}
+                    />
+                  )}
+                </div>
+
+                {/* Micro Action Bar: Copy & Edit */}
+                <div className={`flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${
+                  isUser ? 'mr-1' : 'ml-1'
+                }`}>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(msg.content, `${msg.role}-${idx}`)}
+                    className="inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md bg-white/5 hover:bg-white/10 text-paper/60 hover:text-paper border border-white/10 transition-all cursor-pointer"
+                    title={isUser ? "Copy message" : "Copy text"}
+                  >
+                    {copiedId === `${msg.role}-${idx}` ? (
+                      <>
+                        <Check className="w-3 h-3 text-lime" />
+                        <span className="text-lime">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+
+                  {isUser && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingMsgIndex(idx);
+                        setEditingMsgContent(msg.content);
+                      }}
+                      className="inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md bg-white/5 hover:bg-white/10 text-paper/60 hover:text-paper border border-white/10 transition-all cursor-pointer"
+                      title="Edit and resend message"
+                    >
+                      <Edit2 className="w-3 h-3" />
+                      <span>Edit</span>
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         {loading && (
           <div className="flex justify-start">
             <div className="bg-white/5 border border-white/10 text-paper/60 rounded-2xl p-4 animate-pulse flex items-center gap-2">

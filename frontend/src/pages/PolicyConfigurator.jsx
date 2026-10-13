@@ -24,6 +24,7 @@ const PolicyConfigurator = () => {
   const fetchPolicy = async () => {
     setLoading(true);
     setFeedback(null);
+    const start = Date.now();
     try {
       const res = await axios.get('/api/policies/me');
       const data = res.data;
@@ -34,6 +35,10 @@ const PolicyConfigurator = () => {
         setApprovalThreshold(data.approval_threshold ? data.approval_threshold / 100 : 500);
         setMerchants(data.allowlisted_merchants || ['Amazon', 'Flipkart']);
         setPolicyVersion(data.version || 1);
+      }
+      const elapsed = Date.now() - start;
+      if (elapsed < 550) {
+        await new Promise(r => setTimeout(r, 550 - elapsed));
       }
     } catch (err) {
       console.error('Failed to load user policy, using defaults', err);
@@ -114,10 +119,10 @@ const PolicyConfigurator = () => {
           <button
             onClick={fetchPolicy}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-paper hover:text-lime transition-all self-start sm:self-auto shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-paper hover:text-lime transition-all self-start sm:self-auto shadow-sm active:scale-95 disabled:opacity-60 cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh Policy</span>
+            <RefreshCw className={`w-3.5 h-3.5 text-lime ${loading ? 'animate-spin' : ''}`} />
+            <span>{loading ? 'Refreshing...' : 'Refresh Policy'}</span>
           </button>
         </div>
       </div>

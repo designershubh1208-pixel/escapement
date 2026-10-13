@@ -29,8 +29,13 @@ const ChatInterface = () => {
 
   const fetchHistory = async () => {
     setLoading(true);
+    const start = Date.now();
     try {
       const res = await axios.get('/api/requests');
+      const elapsed = Date.now() - start;
+      if (elapsed < 750) {
+        await new Promise(r => setTimeout(r, 750 - elapsed));
+      }
       setHistory(res.data || []);
     } catch (err) {
       console.error("Failed to fetch history", err);
@@ -138,6 +143,19 @@ const ChatInterface = () => {
     }
   };
 
+  const getErrorMessage = (err, fallback = 'Action failed') => {
+    const d = err.response?.data;
+    if (!d) return err.message || fallback;
+    if (typeof d.detail === 'string') return d.detail;
+    if (Array.isArray(d.detail)) {
+      return d.detail.map(item => item.msg || JSON.stringify(item)).join(', ');
+    }
+    if (typeof d.detail === 'object' && d.detail !== null) return d.detail.message || JSON.stringify(d.detail);
+    if (typeof d.error === 'string') return d.error;
+    if (typeof d.message === 'string') return d.message;
+    return err.message || fallback;
+  };
+
   const handleDecision = async (txId, decisionType) => {
     setActionLoading(true);
     setActionFeedback(null);
@@ -145,8 +163,8 @@ const ChatInterface = () => {
       const res = await axios.post(`/api/approvals/by-tx/${txId}/decision`, {
         decision: decisionType,
         reasons: decisionType === 'APPROVE'
-          ? ['Authorized by user after store verification']
-          : ['Rejected by user']
+          ? 'Authorized by user after store verification'
+          : 'Rejected by user'
       });
 
       setActionFeedback({
@@ -163,7 +181,7 @@ const ChatInterface = () => {
 
       fetchHistory();
     } catch (err) {
-      const errMsg = err.response?.data?.detail || err.response?.data?.error || err.message || 'Action failed';
+      const errMsg = getErrorMessage(err, `Failed to ${decisionType.toLowerCase()}`);
       setActionFeedback({
         type: 'error',
         message: `Failed to ${decisionType.toLowerCase()}: ${errMsg}`
@@ -284,61 +302,89 @@ const ChatInterface = () => {
           <button
             onClick={fetchHistory}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-paper hover:text-lime transition-all self-start sm:self-auto shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-paper hover:text-lime transition-all self-start sm:self-auto shadow-sm active:scale-95 disabled:opacity-60 cursor-pointer"
+            title="Refresh order history & metrics"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+            <RefreshCw className={`w-3.5 h-3.5 text-lime ${loading ? 'animate-spin' : ''}`} />
+            <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
       </div>
 
       {/* KPI Metrics Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
-          <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <ShoppingCart className="w-3.5 h-3.5 text-lime" />
-            <span>Total Orders</span>
-          </p>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-3xl font-bold text-paper">{totalOrdersCount}</span>
-            <span className="text-xs font-mono text-paper/40">purchases</span>
-          </div>
-        </div>
+        {loading ? (
+          <>
+            {[
+              { id: 'kpi-skeleton-1', label: 'Total Orders', icon: ShoppingCart },
+              { id: 'kpi-skeleton-2', label: 'Pending Review', icon: Clock },
+              { id: 'kpi-skeleton-3', label: 'Executed / Settled', icon: PackageCheck },
+              { id: 'kpi-skeleton-4', label: 'Tracked Spend', icon: DollarSign },
+            ].map((kpi) => {
+              const Icon = kpi.icon;
+              return (
+                <div key={kpi.id} className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm skeleton-shimmer">
+                  <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Icon className="w-3.5 h-3.5 text-paper/30" />
+                    <span>{kpi.label}</span>
+                  </p>
+                  <div className="flex items-baseline gap-2 mt-2">
+                    <div className="h-8 w-20 skeleton-bone rounded-lg" />
+                    <div className="h-3.5 w-14 skeleton-bone rounded" />
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        ) : (
+          <>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
+              <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <ShoppingCart className="w-3.5 h-3.5 text-lime" />
+                <span>Total Orders</span>
+              </p>
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-3xl font-bold text-paper">{totalOrdersCount}</span>
+                <span className="text-xs font-mono text-paper/40">purchases</span>
+              </div>
+            </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
-          <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-amber-400" />
-            <span>Pending Review</span>
-          </p>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-3xl font-bold text-amber-400">{pendingApprovalsCount}</span>
-            <span className="text-xs font-mono text-amber-400/70">awaiting check</span>
-          </div>
-        </div>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
+              <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                <span>Pending Review</span>
+              </p>
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-3xl font-bold text-amber-400">{pendingApprovalsCount}</span>
+                <span className="text-xs font-mono text-amber-400/70">awaiting check</span>
+              </div>
+            </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
-          <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <PackageCheck className="w-3.5 h-3.5 text-lime" />
-            <span>Executed / Settled</span>
-          </p>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-3xl font-bold text-lime">{completedOrdersCount}</span>
-            <span className="text-xs font-mono text-lime/70">completed</span>
-          </div>
-        </div>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
+              <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <PackageCheck className="w-3.5 h-3.5 text-lime" />
+                <span>Executed / Settled</span>
+              </p>
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-3xl font-bold text-lime">{completedOrdersCount}</span>
+                <span className="text-xs font-mono text-lime/70">completed</span>
+              </div>
+            </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
-          <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <DollarSign className="w-3.5 h-3.5 text-lime" />
-            <span>Tracked Spend</span>
-          </p>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-3xl font-bold text-paper">
-              ₹{Math.round(totalSpendINR).toLocaleString('en-IN')}
-            </span>
-            <span className="text-xs font-mono text-paper/40">INR</span>
-          </div>
-        </div>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
+              <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <DollarSign className="w-3.5 h-3.5 text-lime" />
+                <span>Tracked Spend</span>
+              </p>
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-3xl font-bold text-paper">
+                  ₹{Math.round(totalSpendINR).toLocaleString('en-IN')}
+                </span>
+                <span className="text-xs font-mono text-paper/40">INR</span>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Filter and Search Bar */}
@@ -375,87 +421,39 @@ const ChatInterface = () => {
 
       {/* Orders List */}
       <div className="flex flex-col gap-3.5">
-        {filteredChats.map((req) => {
-          let intent = {};
-          try {
-            intent = JSON.parse(req.intent_json || '{}');
-          } catch {
-            intent = {};
-          }
-          const merchant = req.merchant || intent.merchant || 'Amazon.in';
-          const action = req.action || intent.action || 'PURCHASE';
-          const amountFormatted = req.amount_inr 
-            ? `₹${Number(req.amount_inr).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
-            : req.amount_paise 
-            ? `₹${(req.amount_paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
-            : null;
+        {loading ? (
+          <>
+            {[1, 2, 3].map((n) => (
+              <div 
+                key={n}
+                className="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 skeleton-shimmer shadow-sm"
+              >
+                <div className="flex-1 min-w-0 space-y-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-2.5 h-2.5 rounded-full skeleton-bone flex-shrink-0" />
+                    <div className="h-5 skeleton-bone w-3/4 max-w-md rounded-md" />
+                  </div>
 
-          const storeInfo = getStoreInfo(req);
-          const isPending = req.status === 'REQUIRES_APPROVAL' || req.status === 'PENDING';
-
-          return (
-            <div 
-              key={req.id} 
-              onClick={() => {
-                setSelectedRequest(req);
-                setActionFeedback(null);
-              }}
-              className="group bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-lime/40 cursor-pointer transition-all active:scale-[0.99] shadow-sm"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2.5 mb-2">
-                  <span className={`w-2 h-2 rounded-full ${isPending ? 'bg-amber-400 shadow-[0_0_8px_1px] shadow-amber-400/60' : 'bg-lime shadow-[0_0_8px_1px] shadow-lime/60'}`}></span>
-                  <p className="text-paper font-semibold text-base sm:text-lg group-hover:text-lime transition-colors">
-                    "{req.user_message}"
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="h-5 w-16 skeleton-bone rounded-md" />
+                    <span className="text-paper/20">•</span>
+                    <div className="h-4 w-20 skeleton-bone rounded" />
+                    <span className="text-paper/20">•</span>
+                    <div className="h-4 w-24 skeleton-bone rounded" />
+                    <span className="text-paper/20">•</span>
+                    <div className="h-4 w-36 skeleton-bone rounded" />
+                  </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-paper/50">
-                  <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-paper/80 font-bold">
-                    {merchant}
-                  </span>
-                  <span>•</span>
-                  <span className="text-paper/60 uppercase">{action}</span>
-                  {amountFormatted && (
-                    <>
-                      <span>•</span>
-                      <span className="text-lime font-bold text-sm">{amountFormatted}</span>
-                    </>
-                  )}
-                  <span>•</span>
-                  <span>{req.created_at ? new Date(req.created_at).toLocaleString() : ''}</span>
+                <div className="flex items-center gap-3 flex-shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/5">
+                  <div className="h-8 w-24 skeleton-bone rounded-xl" />
+                  <div className="h-7 w-28 skeleton-bone rounded-full" />
+                  <div className="w-4 h-4 skeleton-bone rounded-full" />
                 </div>
               </div>
-
-              <div className="flex items-center gap-3 flex-shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/5">
-                {storeInfo && (
-                  <a
-                    href={storeInfo.primaryUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono bg-amber-400/10 text-amber-300 hover:bg-amber-400/20 border border-amber-400/20 transition-all"
-                    title={`Verify directly on ${storeInfo.primaryStore}`}
-                  >
-                    <span>Check Store</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
-
-                <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase font-mono ${getStatusBadgeClass(req.status)}`}>
-                  {req.status === 'REQUIRES_APPROVAL' && '● '}
-                  {req.status}
-                </span>
-
-                <span className="text-paper/40 group-hover:text-lime group-hover:translate-x-1 transition-all text-sm font-bold pl-1">
-                  →
-                </span>
-              </div>
-            </div>
-          );
-        })}
-
-        {filteredChats.length === 0 && !loading && (
+            ))}
+          </>
+        ) : filteredChats.length === 0 ? (
           <div className="py-16 text-center bg-white/5 border border-white/10 rounded-2xl">
             <ShoppingCart className="w-10 h-10 text-paper/20 mx-auto mb-3" />
             <p className="text-paper/60 font-semibold text-base">No buying or ordered chats found.</p>
@@ -463,6 +461,86 @@ const ChatInterface = () => {
               Ask the AI agent in the chat to purchase or search for items on Amazon, Flipkart, or Myntra.
             </p>
           </div>
+        ) : (
+          filteredChats.map((req) => {
+            let intent = {};
+            try {
+              intent = JSON.parse(req.intent_json || '{}');
+            } catch {
+              intent = {};
+            }
+            const merchant = req.merchant || intent.merchant || 'Amazon.in';
+            const action = req.action || intent.action || 'PURCHASE';
+            const amountFormatted = req.amount_inr 
+              ? `₹${Number(req.amount_inr).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+              : req.amount_paise 
+              ? `₹${(req.amount_paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+              : null;
+
+            const storeInfo = getStoreInfo(req);
+            const isPending = req.status === 'REQUIRES_APPROVAL' || req.status === 'PENDING';
+
+            return (
+              <div 
+                key={req.id} 
+                onClick={() => {
+                  setSelectedRequest(req);
+                  setActionFeedback(null);
+                }}
+                className="group bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-lime/40 cursor-pointer transition-all active:scale-[0.99] shadow-sm"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2.5 mb-2">
+                    <span className={`w-2 h-2 rounded-full ${isPending ? 'bg-amber-400 shadow-[0_0_8px_1px] shadow-amber-400/60' : 'bg-lime shadow-[0_0_8px_1px] shadow-lime/60'}`}></span>
+                    <p className="text-paper font-semibold text-base sm:text-lg group-hover:text-lime transition-colors">
+                      "{req.user_message}"
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-paper/50">
+                    <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-paper/80 font-bold">
+                      {merchant}
+                    </span>
+                    <span>•</span>
+                    <span className="text-paper/60 uppercase">{action}</span>
+                    {amountFormatted && (
+                      <>
+                        <span>•</span>
+                        <span className="text-lime font-bold text-sm">{amountFormatted}</span>
+                      </>
+                    )}
+                    <span>•</span>
+                    <span>{req.created_at ? new Date(req.created_at).toLocaleString() : ''}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 flex-shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/5">
+                  {storeInfo && (
+                    <a
+                      href={storeInfo.primaryUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono bg-amber-400/10 text-amber-300 hover:bg-amber-400/20 border border-amber-400/20 transition-all"
+                      title={`Verify directly on ${storeInfo.primaryStore}`}
+                    >
+                      <span>Check Store</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase font-mono ${getStatusBadgeClass(req.status)}`}>
+                    {req.status === 'REQUIRES_APPROVAL' && '● '}
+                    {req.status}
+                  </span>
+
+                  <span className="text-paper/40 group-hover:text-lime group-hover:translate-x-1 transition-all text-sm font-bold pl-1">
+                    →
+                  </span>
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
 

@@ -41,11 +41,16 @@ const SubscriptionTerminatorPage = () => {
 
   const fetchData = async () => {
     setLoading(true);
+    const start = Date.now();
     try {
       const [subsRes, reqsRes] = await Promise.all([
         axios.get('/api/subscriptions'),
         axios.get('/api/requests')
       ]);
+      const elapsed = Date.now() - start;
+      if (elapsed < 550) {
+        await new Promise(r => setTimeout(r, 550 - elapsed));
+      }
       setSubscriptions(subsRes.data || []);
       setHistory(reqsRes.data || []);
     } catch (err) {
@@ -214,51 +219,72 @@ const SubscriptionTerminatorPage = () => {
           <button
             onClick={fetchData}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-paper hover:text-lime transition-all self-start sm:self-auto shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-paper hover:text-lime transition-all self-start sm:self-auto shadow-sm active:scale-95 disabled:opacity-60 cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+            <RefreshCw className={`w-3.5 h-3.5 text-lime ${loading ? 'animate-spin' : ''}`} />
+            <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
       </div>
 
       {/* KPI Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
-          <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1">Active Subscriptions</p>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-3xl font-bold text-paper">{activeCount}</span>
-            <span className="text-xs font-mono text-amber-400">Burning capital</span>
-          </div>
-        </div>
+        {loading ? (
+          <>
+            {[
+              'Active Subscriptions',
+              'Terminated / Stopped',
+              'Monthly Recurring Burn',
+              'Total Monthly Savings',
+            ].map((label, idx) => (
+              <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm skeleton-shimmer">
+                <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-2">{label}</p>
+                <div className="flex items-baseline gap-2 mt-2">
+                  <div className="h-8 w-20 skeleton-bone rounded-lg" />
+                  <div className="h-3.5 w-16 skeleton-bone rounded" />
+                </div>
+              </div>
+            ))}
+          </>
+        ) : (
+          <>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
+              <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1">Active Subscriptions</p>
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-3xl font-bold text-paper">{activeCount}</span>
+                <span className="text-xs font-mono text-amber-400">Burning capital</span>
+              </div>
+            </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
-          <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1">Terminated / Stopped</p>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-3xl font-bold text-lime">{terminatedCount}</span>
-            <span className="text-xs font-mono text-lime/70">Protected</span>
-          </div>
-        </div>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
+              <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1">Terminated / Stopped</p>
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-3xl font-bold text-lime">{terminatedCount}</span>
+                <span className="text-xs font-mono text-lime/70">Protected</span>
+              </div>
+            </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
-          <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1">Monthly Recurring Burn</p>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-3xl font-bold text-paper">
-              ₹{Math.round(totalBurnMonthly).toLocaleString('en-IN')}
-            </span>
-            <span className="text-xs font-mono text-paper/40">/mo</span>
-          </div>
-        </div>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
+              <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1">Monthly Recurring Burn</p>
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-3xl font-bold text-paper">
+                  ₹{Math.round(totalBurnMonthly).toLocaleString('en-IN')}
+                </span>
+                <span className="text-xs font-mono text-paper/40">/mo</span>
+              </div>
+            </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
-          <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1">Total Monthly Savings</p>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-3xl font-bold text-lime">
-              ₹{Math.round(totalSavingsMonthly).toLocaleString('en-IN')}
-            </span>
-            <span className="text-xs font-mono text-lime/70">saved/mo</span>
-          </div>
-        </div>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-sm">
+              <p className="text-xs font-mono text-paper/40 uppercase tracking-wider mb-1">Total Monthly Savings</p>
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-3xl font-bold text-lime">
+                  ₹{Math.round(totalSavingsMonthly).toLocaleString('en-IN')}
+                </span>
+                <span className="text-xs font-mono text-lime/70">saved/mo</span>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Feedback Banner */}
@@ -358,7 +384,35 @@ const SubscriptionTerminatorPage = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {subscriptions.length === 0 ? (
+          {loading ? (
+            <>
+              {[1, 2].map((n) => (
+                <div key={n} className="bg-white/5 border border-white/10 rounded-2xl p-6 skeleton-shimmer shadow-sm space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-2">
+                      <div className="h-6 w-36 skeleton-bone rounded-md" />
+                      <div className="h-3.5 w-24 skeleton-bone rounded" />
+                    </div>
+                    <div className="h-6 w-20 skeleton-bone rounded-full" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 py-3 border-y border-white/5 my-3">
+                    <div className="space-y-1.5">
+                      <div className="h-3 w-16 skeleton-bone rounded" />
+                      <div className="h-4 w-24 skeleton-bone rounded" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="h-3 w-16 skeleton-bone rounded" />
+                      <div className="h-4 w-28 skeleton-bone rounded" />
+                    </div>
+                  </div>
+                  <div className="pt-2 flex items-center justify-between">
+                    <div className="h-3 w-24 skeleton-bone rounded" />
+                    <div className="h-8 w-28 skeleton-bone rounded-xl" />
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : subscriptions.length === 0 ? (
             <div className="col-span-1 md:col-span-2 py-12 px-6 text-center bg-white/5 border border-white/10 rounded-2xl flex flex-col items-center justify-center">
               <div className="w-12 h-12 rounded-full bg-lime/10 border border-lime/20 flex items-center justify-center text-lime mb-3">
                 <CreditCard className="w-6 h-6" />
