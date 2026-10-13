@@ -1,12 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
-
-const wordVariants = {
-  hidden: { y: "110%", opacity: 0 },
-  visible: { y: "0%", opacity: 1, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
-};
 
 const partnerLogos = [
   { name: 'stripe', svg: (
@@ -45,57 +39,53 @@ const partnerLogos = [
 
 export default function StarterPayHero() {
   return (
-    <section className="relative w-full pt-28 pb-16 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto overflow-hidden">
-      {/* Outer Card Enclosure with Rounded Bevel and Border */}
-      <div className="relative rounded-3xl lg:rounded-[36px] overflow-hidden border border-black/10 dark:border-white/10 shadow-2xl bg-white dark:bg-[#08090a] transition-colors duration-500">
+    <section className="relative w-full min-h-screen bg-ink flex flex-col justify-between overflow-hidden">
+      
+      {/* ============================================================== */}
+      {/* TOP ART BACKGROUND: Full-Width 3D Neon Ribbon Flow */}
+      {/* ============================================================== */}
+      <div className="relative w-full h-[52vh] sm:h-[58vh] md:h-[62vh] min-h-[380px] overflow-hidden select-none">
+        {/* Full Edge-to-Edge Abstract 3D Wave */}
+        <img 
+          src="/hero-wave.jpg" 
+          alt="Neural Routing 3D Wave Visual" 
+          className="w-full h-full object-cover object-center scale-[1.02]"
+        />
+
+        {/* Crisp horizontal refraction beam across the top header zone */}
+        <div className="absolute top-[88px] inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none" />
+
+        {/* Seamless bottom fade into body canvas */}
+        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink/60 to-transparent pointer-events-none" />
+      </div>
+
+      {/* ============================================================== */}
+      {/* BOTTOM CONTENT: Typography, CTAs & Full-Width Partner Logos */}
+      {/* ============================================================== */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 -mt-16 sm:-mt-24 md:-mt-32 pb-12 sm:pb-16 flex-1 flex flex-col justify-between">
         
-        {/* ============================================================== */}
-        {/* TOP HALF: 3D Iridescent Liquid Neon Wave Art Panel */}
-        {/* ============================================================== */}
-        <div className="relative w-full h-[320px] sm:h-[420px] md:h-[480px] lg:h-[520px] overflow-hidden select-none">
-          {/* Abstract 3D Wave Image */}
-          <img 
-            src="/hero-wave.jpg" 
-            alt="Neural Routing 3D Wave Visual" 
-            className="w-full h-full object-cover object-center scale-[1.03] transition-transform duration-1000 ease-out hover:scale-105"
-          />
-
-          {/* Subtly dynamic glass refraction shimmer line across upper fold */}
-          <div className="absolute top-12 inset-x-8 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
-
-          {/* Seamless gradient blend into bottom black/surface section */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#08090a] via-[#08090a]/40 to-transparent dark:block hidden pointer-events-none" />
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent dark:hidden block pointer-events-none" />
-          
-          {/* Top-down soft vignette for clean framing */}
-          <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/40 to-transparent pointer-events-none" />
-        </div>
-
-        {/* ============================================================== */}
-        {/* BOTTOM HALF: Typography, Action Buttons & Partner Wall */}
-        {/* ============================================================== */}
-        <div className="relative z-10 px-6 sm:px-10 lg:px-14 pb-10 pt-4 sm:pt-6 bg-white dark:bg-[#08090a] transition-colors duration-500">
-          
-          {/* Mini Chip / Badge */}
+        {/* Chip + Headline + CTA Section */}
+        <div>
+          {/* Mini Badge */}
           <motion.div 
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="inline-flex items-center gap-2 mb-4 sm:mb-6 text-xs sm:text-sm font-medium tracking-wide text-zinc-700 dark:text-zinc-300"
+            className="inline-flex items-center gap-2 mb-4 sm:mb-6 text-xs sm:text-sm font-medium tracking-wide text-paper/70"
           >
             <span className="text-amber-500 dark:text-orange-400 text-sm">⚡</span>
             <span>Neural Routing Active, 99.98% Efficiency</span>
           </motion.div>
 
-          {/* Main Title Row & Action Buttons */}
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 lg:gap-12 mb-12 sm:mb-16">
-            
-            {/* Massive Display Heading */}
-            <div className="max-w-3xl">
-              <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[84px] xl:text-[92px] font-extrabold tracking-[-0.035em] leading-[0.95] text-zinc-950 dark:text-white">
+          {/* Headline and CTAs row */}
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 lg:gap-12 mb-14 sm:mb-20">
+            {/* Display Headline */}
+            <div className="max-w-4xl">
+              <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[88px] xl:text-[98px] font-extrabold tracking-[-0.035em] leading-[0.92] text-paper">
                 <span className="block">Global Transfers</span>
-                <span className="inline-flex items-center gap-3 sm:gap-4 flex-wrap">
-                  <span className="inline-block transform translate-y-[-2px] text-zinc-950 dark:text-white font-normal text-4xl sm:text-6xl lg:text-[76px]">
+                <span className="inline-flex items-center gap-3 sm:gap-5 flex-wrap">
+                  <span className="inline-block transform translate-y-[-2px] text-paper font-normal text-4xl sm:text-6xl lg:text-[80px]">
                     →
                   </span>
                   <span>managed by AI.</span>
@@ -103,22 +93,22 @@ export default function StarterPayHero() {
               </h1>
             </div>
 
-            {/* CTA Button Group */}
+            {/* Action Buttons */}
             <motion.div 
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               className="flex items-center gap-3 sm:gap-4 shrink-0"
             >
-              {/* Secondary Button: See More */}
+              {/* Secondary Pill Button */}
               <Link
                 to="/services"
-                className="inline-flex items-center justify-center px-6 sm:px-7 h-12 sm:h-13 rounded-full text-xs sm:text-sm font-semibold tracking-tight border border-zinc-300 dark:border-white/15 bg-zinc-100 dark:bg-black/40 text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-white/10 transition-all duration-200 shadow-sm"
+                className="inline-flex items-center justify-center px-6 sm:px-7 h-12 sm:h-13 rounded-full text-xs sm:text-sm font-semibold tracking-tight border border-white/15 bg-white/5 hover:bg-white/10 text-paper transition-all duration-200 shadow-sm"
               >
                 See more
               </Link>
 
-              {/* Primary Button: Gradient Sunrise Glow (Orange to Peach) */}
+              {/* Primary Sunrise Gradient Button */}
               <Link
                 to="/register"
                 className="group relative inline-flex items-center justify-center px-6 sm:px-8 h-12 sm:h-13 rounded-full text-xs sm:text-sm font-bold tracking-tight text-zinc-950 transition-all duration-300 overflow-hidden shadow-lg hover:shadow-orange-500/25 hover:scale-[1.02] active:scale-[0.98]"
@@ -131,16 +121,17 @@ export default function StarterPayHero() {
               </Link>
             </motion.div>
           </div>
+        </div>
 
-          {/* Divider Line */}
-          <div className="w-full h-px bg-zinc-200 dark:bg-white/10 mb-8" />
-
-          {/* Bottom Logos / Trust Wall */}
-          <div className="flex flex-wrap items-center justify-between gap-6 sm:gap-8 opacity-75 dark:opacity-85 text-zinc-700 dark:text-zinc-400">
+        {/* Full-Width Divider Line & Partner Wall */}
+        <div>
+          <div className="w-full h-px bg-white/10 mb-8" />
+          
+          <div className="flex flex-wrap items-center justify-between gap-6 sm:gap-8 opacity-75 hover:opacity-95 transition-opacity text-paper/70">
             {partnerLogos.map((partner, index) => (
               <div 
                 key={index} 
-                className="flex items-center transition-opacity hover:opacity-100 hover:text-zinc-950 dark:hover:text-white cursor-default select-none"
+                className="flex items-center transition-colors hover:text-paper cursor-default select-none"
               >
                 {partner.svg ? (
                   partner.svg
@@ -152,9 +143,10 @@ export default function StarterPayHero() {
               </div>
             ))}
           </div>
-
         </div>
+
       </div>
+
     </section>
   );
 }
