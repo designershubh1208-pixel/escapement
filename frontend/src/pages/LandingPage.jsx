@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import StarterPayHero from '../components/StarterPayHero';
 
 const wordVariants = {
   hidden: { y: "110%" },
@@ -89,60 +90,8 @@ const StoryScrollSection = () => {
 const LandingPage = () => {
   return (
     <div className="bg-ink min-h-screen">
-      {/* Hero Section */}
-      <section className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden pt-32 pb-20">
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute inset-0 bg-grid"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-ink/80 to-ink"></div>
-          <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/4 w-[80vw] h-[50vh] rounded-[100%] bg-lime/15 blur-[120px]"></div>
-        </div>
-        
-        <div className="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-8">
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mb-8 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 backdrop-blur-sm"
-          >
-            <span className="size-2 rounded-full bg-lime shadow-[0_0_12px_2px] shadow-lime/60"></span>
-            <span className="font-mono text-xs font-bold tracking-widest text-paper/60 uppercase">AUTONOMOUS FINANCIAL AGENT</span>
-          </motion.div>
-          
-          <div className="relative">
-            <h1 className="font-display text-[18vw] sm:text-[15vw] lg:text-[180px] font-bold text-paper leading-[0.8] tracking-tighter">
-              <span className="block overflow-hidden pb-4">
-                <motion.span variants={wordVariants} initial="hidden" animate="visible" className="inline-block">Secure</motion.span>
-              </span>
-              <span className="block overflow-hidden pb-4">
-                <motion.span variants={wordVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }} className="inline-block">autonomous</motion.span>
-              </span>
-              <span className="block text-lime overflow-hidden pb-4">
-                <motion.span variants={wordVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }} className="inline-block">financial</motion.span>
-              </span>
-              <span className="block text-lime overflow-hidden pb-4">
-                <motion.span variants={wordVariants} initial="hidden" animate="visible" transition={{ delay: 0.3 }} className="inline-block">agent</motion.span>
-              </span>
-            </h1>
-            
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-12 lg:mt-0 lg:absolute lg:right-0 lg:bottom-4 lg:max-w-lg xl:max-w-xl"
-            >
-              <p className="text-lg sm:text-xl text-paper/70 font-sans font-medium leading-relaxed mb-8">
-                Let an AI act on your behalf while enforcing deterministic<br className="hidden lg:block" />
-                financial permissions before any payment is executed.<br className="hidden lg:block" />
-                AI decides, policy protects.
-              </p>
-              
-              <Link to="/chat" className="inline-flex items-center justify-center gap-2 rounded-full font-bold bg-lime text-ink hover:bg-lime/90 transition-colors h-14 px-8 text-sm">
-                Chat ↗
-              </Link>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+      {/* StarterPay Inspired Hero Section (Exact replica of design and layout in light and dark theme) */}
+      <StarterPayHero />
 
       {/* StoryTelling Scroll Section replacing the static 'What we do' section */}
       <StoryScrollSection />
