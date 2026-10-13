@@ -29,3 +29,7 @@ class ChatResponse(BaseModel):
     decision: Optional[str] = None  # APPROVE, REQUIRE_APPROVAL, BLOCK, NONE
     policy_reasons: Optional[List[str]] = None
     transaction_id: Optional[str] = None
+
+class UpdateChatSessionRequest(BaseModel):
+    title: Optional[str] = None
+

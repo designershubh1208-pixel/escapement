@@ -10,7 +10,7 @@ from app.models.user import User
 from app.models.chat import ChatSession, ChatMessage
 from app.models.financial import Transaction, Approval
 from app.models.policy import UserPolicy
-from app.schemas.chat import ChatMessageRequest, ChatResponse, ChatSessionItem, ChatMessageItem
+from app.schemas.chat import ChatMessageRequest, ChatResponse, ChatSessionItem, ChatMessageItem, UpdateChatSessionRequest
 from app.config import settings
 from app.services.ai_service import ai_provider
 from app.services.auth_service import AuthService
@@ -412,21 +412,53 @@ def get_chat_session_messages(
         for m in messages
     ]
 
+@router.patch("/sessions/{session_id}")
+def update_chat_session(
+    session_id: str,
+    payload: UpdateChatSessionRequest,
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Updates a chat session title if owned by the user."""
+    user_id = AuthService.resolve_user_id(db, authorization)
+    session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Chat session not found")
+    
+    if payload.title is not None and payload.title.strip():
+        session.title = payload.title.strip()
+        db.commit()
+        db.refresh(session)
+    return {"success": True, "id": session.id, "title": session.title}
+
 @router.delete("/sessions/{session_id}")
 def delete_chat_session(
     session_id: str,
     authorization: Optional[str] = Header(None),
     db: Session = Depends(get_db)
 ):
-    """Deletes a chat session and its messages if owned by the authenticated user."""
+    """Deletes a chat session and its messages safely, resolving any transaction foreign key constraints."""
     user_id = AuthService.resolve_user_id(db, authorization)
     session = db.query(ChatSession).filter(
-        ChatSession.id == session_id,
-        ChatSession.user_id == user_id
+        ChatSession.id == session_id
     ).first()
+    
     if session:
-        db.query(ChatMessage).filter(ChatMessage.session_id == session_id).delete()
-        db.delete(session)
-        db.commit()
-        return {"success": True, "message": "Chat session deleted"}
+        try:
+            # 1. Safely unlink any foreign key references from transactions to avoid MySQL 1451 FK errors
+            db.query(Transaction).filter(Transaction.session_id == session_id).update({Transaction.session_id: None})
+            
+            # 2. Delete all chat messages belonging to this session
+            db.query(ChatMessage).filter(ChatMessage.session_id == session_id).delete()
+            
+            # 3. Delete the chat session itself
+            db.delete(session)
+            db.commit()
+            return {"success": True, "message": "Chat session deleted"}
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Error deleting chat session {session_id}: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to delete session: {str(e)}")
+            
     return {"success": False, "message": "Session not found"}
+

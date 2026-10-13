@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Union
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
@@ -24,4 +24,4 @@ class TransactionResponse(BaseModel):
 
 class ApprovalDecisionRequest(BaseModel):
     decision: str  # "APPROVE" or "REJECT"
-    reasons: Optional[str] = None
+    reasons: Optional[Union[str, List[str]]] = None
