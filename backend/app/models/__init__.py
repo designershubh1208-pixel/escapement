@@ -9,6 +9,7 @@ from app.models.session_key import UserSessionKey
 from app.models.mock_bank import MockBankAccount, MockBankLedger
 from app.models.evm_permission import BlockchainPermission
 from app.models.audit import AuditLog
+from app.models.otp import MobileOTP, EmailOTP
 
 __all__ = [
     "Base",
@@ -28,5 +29,7 @@ __all__ = [
     "MockBankAccount",
     "MockBankLedger",
     "BlockchainPermission",
-    "AuditLog"
+    "AuditLog",
+    "MobileOTP",
+    "EmailOTP"
 ]

@@ -53,6 +53,32 @@ class Settings(BaseSettings):
     ECOMMERCE_API_KEY: Optional[str] = None
     ECOMMERCE_API_ENDPOINT: Optional[str] = None
 
+    # Auth & Security Configuration (JWT & Mobile OTP)
+    JWT_SECRET_KEY: str = "defai_sentinel_super_secret_jwt_key_2026_x89f"
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
+    OTP_EXPIRE_MINUTES: int = 10
+    TWILIO_ACCOUNT_SID: Optional[str] = None
+    TWILIO_AUTH_TOKEN: Optional[str] = None
+    TWILIO_FROM_NUMBER: Optional[str] = None
+    FAST2SMS_API_KEY: Optional[str] = None
+
+    # SMTP / Email Configuration (Free Email OTP)
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    SMTP_FROM_EMAIL: Optional[str] = None
+
+    # OAuth Configuration (Google & GitHub)
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_REDIRECT_URI: str = "http://localhost:5001/api/auth/google/callback"
+    GITHUB_CLIENT_ID: Optional[str] = None
+    GITHUB_CLIENT_SECRET: Optional[str] = None
+    GITHUB_REDIRECT_URI: str = "http://localhost:5001/api/auth/github/callback"
+    FRONTEND_URL: str = "http://localhost:3000"
+
     @model_validator(mode="after")
     def validate_payment_mode(self):
         """Enforces fail-closed guardrails around live payment execution."""

@@ -189,13 +189,24 @@ const QnAPage = () => {
     if (id) {
       setLoading(true);
       axios.get(`/api/chat/sessions/${id}`)
-        .then(res => setMessages(res.data))
-        .catch(err => console.error(err))
+        .then(res => {
+          if (res.data && res.data.length > 0) {
+            setMessages(res.data);
+          } else {
+            // Session not found or belongs to another user
+            setMessages([{ role: 'assistant', content: 'Hello! I am your AI assistant. How can I help you today?' }]);
+            navigate('/dashboard/chat', { replace: true });
+          }
+        })
+        .catch(err => {
+          console.error("Session load error:", err);
+          navigate('/dashboard/chat', { replace: true });
+        })
         .finally(() => setLoading(false));
     } else {
       setMessages([{ role: 'assistant', content: 'Hello! I am your AI assistant. How can I help you today?' }]);
     }
-  }, [id]);
+  }, [id, navigate]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

@@ -1,181 +1,348 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Shield, CheckCircle2, AlertTriangle, RefreshCw, Save, DollarSign, Store, Tag, Plus, X, Lock } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const PolicyConfigurator = () => {
-  const [policies, setPolicies] = useState({
-    daily_limit: 200000, 
-    per_transaction_limit: 50000, 
-    monthly_limit: 1000000, 
-    approval_threshold: 50000, 
-    expiry_date: '',
-    allowlisted_merchants: ['Amazon', 'Flipkart']
-  });
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const { user, isAuthenticated } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+
+  // Policy Form State (stored in Rupees for user convenience)
+  const [perTxLimit, setPerTxLimit] = useState(500);
+  const [dailyLimit, setDailyLimit] = useState(2000);
+  const [monthlyLimit, setMonthlyLimit] = useState(10000);
+  const [approvalThreshold, setApprovalThreshold] = useState(500);
+  const [merchants, setMerchants] = useState(['Amazon', 'Flipkart', 'Myntra']);
   const [merchantInput, setMerchantInput] = useState('');
+  const [policyVersion, setPolicyVersion] = useState(1);
 
-  const USER_ID = 'user_1';
+  // Quick presets for Per-Transaction Limit
+  const PRESET_LIMITS = [500, 1000, 2500, 5000, 15000, 50000];
 
-  useEffect(() => {
-    const fetchPolicies = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(`/api/policies/${USER_ID}`);
-        setPolicies(response.data);
-      } catch (err) {
-        console.log('No existing policies found, using defaults');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPolicies();
-  }, []);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const fetchPolicy = async () => {
     setLoading(true);
-    setMessage('');
-    setError('');
+    setFeedback(null);
     try {
-      await axios.put(`/api/policies/${USER_ID}`, policies);
-      setMessage('Policies saved successfully!');
+      const res = await axios.get('/api/policies/me');
+      const data = res.data;
+      if (data) {
+        setPerTxLimit(data.per_transaction_limit ? data.per_transaction_limit / 100 : 500);
+        setDailyLimit(data.daily_limit ? data.daily_limit / 100 : 2000);
+        setMonthlyLimit(data.monthly_limit ? data.monthly_limit / 100 : 10000);
+        setApprovalThreshold(data.approval_threshold ? data.approval_threshold / 100 : 500);
+        setMerchants(data.allowlisted_merchants || ['Amazon', 'Flipkart']);
+        setPolicyVersion(data.version || 1);
+      }
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to save policies');
+      console.error('Failed to load user policy, using defaults', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddMerchant = () => {
-    const value = merchantInput.trim();
-    if (value) {
-      setPolicies(prev => ({
-        ...prev,
-        allowlisted_merchants: [...new Set([...prev.allowlisted_merchants, value])]
-      }));
+  useEffect(() => {
+    fetchPolicy();
+  }, [user?.id]);
+
+  const handleSavePolicy = async (e) => {
+    if (e) e.preventDefault();
+    setSaving(true);
+    setFeedback(null);
+
+    const payload = {
+      per_transaction_limit_rupees: parseFloat(perTxLimit) || 0,
+      daily_limit_rupees: parseFloat(dailyLimit) || 0,
+      monthly_limit_rupees: parseFloat(monthlyLimit) || 0,
+      approval_threshold_rupees: parseFloat(approvalThreshold) || 0,
+      allowlisted_merchants: merchants
+    };
+
+    try {
+      const res = await axios.post('/api/policies/limits', payload);
+      if (res.data.success) {
+        setPolicyVersion(res.data.version || policyVersion + 1);
+        setFeedback({
+          type: 'success',
+          message: `✓ Policy Version v${res.data.version} active! Per-transaction limit set to ₹${Number(payload.per_transaction_limit_rupees).toLocaleString('en-IN', { minimumFractionDigits: 2 })}.`
+        });
+      }
+    } catch (err) {
+      const errMsg = err.response?.data?.detail || err.response?.data?.error || err.message || 'Failed to update transaction limits';
+      setFeedback({
+        type: 'error',
+        message: `Error: ${errMsg}`
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAddMerchant = (e) => {
+    if (e) e.preventDefault();
+    const val = merchantInput.trim();
+    if (val && !merchants.some(m => m.toLowerCase() === val.toLowerCase())) {
+      setMerchants(prev => [...prev, val]);
       setMerchantInput('');
     }
   };
 
-  const removeMerchant = (merchant) => {
-    setPolicies(prev => ({
-      ...prev,
-      allowlisted_merchants: prev.allowlisted_merchants.filter(m => m !== merchant)
-    }));
+  const handleRemoveMerchant = (merchantToRemove) => {
+    setMerchants(prev => prev.filter(m => m.toLowerCase() !== merchantToRemove.toLowerCase()));
   };
 
   return (
-    <section className="min-h-[100svh] bg-ink pt-32 pb-20 relative">
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-grid"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-ink/80 to-ink"></div>
+    <div className="p-6 sm:p-8 max-w-6xl mx-auto relative">
+      {/* Page Header */}
+      <div className="mb-10">
+        <p className="font-mono text-xs font-bold tracking-widest text-lime uppercase mb-3">
+          ( DETERMINISTIC RISK ENGINE )
+        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="font-display text-4xl sm:text-5xl font-bold text-paper tracking-tighter flex items-center gap-3">
+              <span>Spending Limits & Policy</span>
+              <span className="text-xl sm:text-2xl px-3 py-1 rounded-full bg-lime/10 text-lime border border-lime/20 font-mono text-sm">
+                v{policyVersion}
+              </span>
+            </h1>
+            <p className="text-paper/60 text-base sm:text-lg mt-2 max-w-3xl">
+              Set hard financial invariants and transaction limits. Any AI action exceeding your configured bounds is deterministically blocked.
+            </p>
+          </div>
+          <button
+            onClick={fetchPolicy}
+            disabled={loading}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-paper hover:text-lime transition-all self-start sm:self-auto shadow-sm cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh Policy</span>
+          </button>
+        </div>
       </div>
-      
-      <div className="relative z-10 mx-auto max-w-4xl px-6">
-        <div className="mb-12">
-          <p className="font-mono text-xs font-bold tracking-widest text-lime uppercase mb-4">( Security )</p>
-          <h1 className="font-display text-5xl font-bold text-paper mb-4 tracking-tighter">Policy Configuration</h1>
-          <p className="text-paper/60 text-lg">
-            Define the strict limits and allowlists that govern the AI agent's actions.
-          </p>
+
+      {/* Feedback Alert */}
+      {feedback && (
+        <div className={`mb-8 p-4 rounded-2xl flex items-center gap-3 border shadow-md ${
+          feedback.type === 'success' 
+            ? 'bg-lime/10 border-lime/30 text-lime' 
+            : 'bg-red-500/10 border-red-500/30 text-red-400'
+        }`}>
+          {feedback.type === 'success' ? <CheckCircle2 className="w-5 h-5 flex-shrink-0" /> : <AlertTriangle className="w-5 h-5 flex-shrink-0" />}
+          <span className="text-sm font-medium">{feedback.message}</span>
+        </div>
+      )}
+
+      {/* Form Container */}
+      <form onSubmit={handleSavePolicy} className="space-y-8">
+        
+        {/* Card 1: Core Transaction Limits */}
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-md shadow-sm">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
+            <div className="w-10 h-10 rounded-xl bg-lime/15 border border-lime/30 flex items-center justify-center text-lime">
+              <Lock className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="font-display text-2xl font-bold text-paper">Per-Transaction Hard Limit</h2>
+              <p className="text-paper/50 text-xs font-mono">Maximum single spend amount permitted without explicit override</p>
+            </div>
+          </div>
+
+          {/* Quick Presets */}
+          <div className="mb-6">
+            <label className="block text-xs font-mono text-paper/60 uppercase mb-2">Quick Presets</label>
+            <div className="flex flex-wrap gap-2.5">
+              {PRESET_LIMITS.map((amount) => {
+                const isSelected = Number(perTxLimit) === amount;
+                return (
+                  <button
+                    type="button"
+                    key={amount}
+                    onClick={() => setPerTxLimit(amount)}
+                    className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-lime text-ink shadow-md shadow-lime/20 scale-105'
+                        : 'bg-white/5 hover:bg-white/10 text-paper border border-white/10'
+                    }`}
+                  >
+                    ₹{amount.toLocaleString('en-IN')}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="per_tx_input" className="block text-xs font-mono text-paper/70 uppercase mb-2">
+                Custom Per-Transaction Limit (₹) *
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-paper/40 font-mono">₹</span>
+                <input
+                  id="per_tx_input"
+                  type="number"
+                  min="1"
+                  step="0.01"
+                  required
+                  value={perTxLimit}
+                  onChange={(e) => setPerTxLimit(e.target.value)}
+                  className="w-full bg-ink/70 border border-white/15 rounded-xl pl-8 pr-4 py-3 text-paper font-bold text-lg focus:border-lime focus:outline-none transition-colors"
+                  placeholder="500.00"
+                />
+              </div>
+              <p className="text-[11px] text-paper/40 mt-1.5 font-mono">
+                Transactions higher than ₹{Number(perTxLimit || 0).toLocaleString('en-IN')} will be automatically stopped by the policy engine.
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="approval_threshold_input" className="block text-xs font-mono text-paper/70 uppercase mb-2">
+                Human Confirmation Threshold (₹)
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-paper/40 font-mono">₹</span>
+                <input
+                  id="approval_threshold_input"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={approvalThreshold}
+                  onChange={(e) => setApprovalThreshold(e.target.value)}
+                  className="w-full bg-ink/70 border border-white/15 rounded-xl pl-8 pr-4 py-3 text-paper font-bold text-lg focus:border-lime focus:outline-none transition-colors"
+                  placeholder="500.00"
+                />
+              </div>
+              <p className="text-[11px] text-paper/40 mt-1.5 font-mono">
+                Purchases above ₹{Number(approvalThreshold || 0).toLocaleString('en-IN')} require your 1-click authorization before executing.
+              </p>
+            </div>
+          </div>
         </div>
 
-        {message && <div className="mb-6 p-4 rounded-lg bg-lime/10 border border-lime/20 text-lime font-medium">{message}</div>}
-        {error && <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 font-medium">{error}</div>}
-
-        <form onSubmit={handleSubmit} className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-10 backdrop-blur-md">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-10">
-            <div className="flex flex-col gap-2">
-              <label htmlFor="daily_limit" className="font-mono text-sm text-paper/70">Daily Limit (₹)</label>
-              <input
-                type="number"
-                id="daily_limit"
-                className="bg-ink/50 border border-white/10 rounded-xl px-4 py-3 text-paper font-medium focus:border-lime focus:outline-none transition-colors"
-                value={policies.daily_limit / 100}
-                onChange={(e) => setPolicies(prev => ({ ...prev, daily_limit: parseFloat(e.target.value) * 100 || 0 }))}
-                min="0" step="0.01" required disabled={loading}
-              />
+        {/* Card 2: Cumulative Daily & Monthly Budgets */}
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-md shadow-sm">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
+            <div className="w-10 h-10 rounded-xl bg-lime/15 border border-lime/30 flex items-center justify-center text-lime">
+              <DollarSign className="w-5 h-5" />
             </div>
-            <div className="flex flex-col gap-2">
-              <label htmlFor="per_transaction_limit" className="font-mono text-sm text-paper/70">Per‑Transaction Limit (₹)</label>
-              <input
-                type="number"
-                id="per_transaction_limit"
-                className="bg-ink/50 border border-white/10 rounded-xl px-4 py-3 text-paper font-medium focus:border-lime focus:outline-none transition-colors"
-                value={policies.per_transaction_limit / 100}
-                onChange={(e) => setPolicies(prev => ({ ...prev, per_transaction_limit: parseFloat(e.target.value) * 100 || 0 }))}
-                min="0" step="0.01" required disabled={loading}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label htmlFor="monthly_limit" className="font-mono text-sm text-paper/70">Monthly Limit (₹)</label>
-              <input
-                type="number"
-                id="monthly_limit"
-                className="bg-ink/50 border border-white/10 rounded-xl px-4 py-3 text-paper font-medium focus:border-lime focus:outline-none transition-colors"
-                value={policies.monthly_limit / 100}
-                onChange={(e) => setPolicies(prev => ({ ...prev, monthly_limit: parseFloat(e.target.value) * 100 || 0 }))}
-                min="0" step="0.01" required disabled={loading}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label htmlFor="approval_threshold" className="font-mono text-sm text-paper/70">Human Approval Threshold (₹)</label>
-              <input
-                type="number"
-                id="approval_threshold"
-                className="bg-ink/50 border border-white/10 rounded-xl px-4 py-3 text-paper font-medium focus:border-lime focus:outline-none transition-colors"
-                value={policies.approval_threshold / 100}
-                onChange={(e) => setPolicies(prev => ({ ...prev, approval_threshold: parseFloat(e.target.value) * 100 || 0 }))}
-                min="0" step="0.01" required disabled={loading}
-              />
-            </div>
-            <div className="flex flex-col gap-2 sm:col-span-2">
-              <label htmlFor="expiry_date" className="font-mono text-sm text-paper/70">Policy Expiry Date</label>
-              <input
-                type="date"
-                id="expiry_date"
-                className="bg-ink/50 border border-white/10 rounded-xl px-4 py-3 text-paper font-medium focus:border-lime focus:outline-none transition-colors"
-                value={policies.expiry_date}
-                onChange={(e) => setPolicies(prev => ({ ...prev, expiry_date: e.target.value }))}
-                disabled={loading}
-              />
+            <div>
+              <h2 className="font-display text-2xl font-bold text-paper">Budget Capacities</h2>
+              <p className="text-paper/50 text-xs font-mono">Cumulative circuit-breakers across all daily and monthly activity</p>
             </div>
           </div>
 
-          <div className="border-t border-white/10 pt-10 mb-10">
-            <h3 className="font-display text-xl text-paper mb-6 font-bold">Allowlisted Merchants</h3>
-            <div className="flex gap-4 mb-6">
-              <input
-                type="text"
-                className="flex-1 bg-ink/50 border border-white/10 rounded-xl px-4 py-3 text-paper font-medium focus:border-lime focus:outline-none transition-colors placeholder-paper/20"
-                placeholder="Enter merchant name (e.g., Apple)"
-                value={merchantInput}
-                onChange={(e) => setMerchantInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddMerchant())}
-              />
-              <button type="button" onClick={handleAddMerchant} className="inline-flex items-center justify-center rounded-xl font-bold bg-white/10 text-paper hover:bg-white/20 transition-colors px-6" disabled={loading}>
-                Add
-              </button>
-            </div>
-            {policies.allowlisted_merchants.length > 0 && (
-              <div className="flex flex-wrap gap-3">
-                {policies.allowlisted_merchants.map((merchant, idx) => (
-                  <span key={idx} className="inline-flex items-center gap-2 bg-ink border border-white/10 rounded-full px-4 py-1.5 text-sm font-medium">
-                    {merchant}
-                    <button type="button" onClick={() => removeMerchant(merchant)} className="text-paper/40 hover:text-red-400">&times;</button>
-                  </span>
-                ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="daily_limit_input" className="block text-xs font-mono text-paper/70 uppercase mb-2">
+                Daily Budget Limit (₹)
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-paper/40 font-mono">₹</span>
+                <input
+                  id="daily_limit_input"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={dailyLimit}
+                  onChange={(e) => setDailyLimit(e.target.value)}
+                  className="w-full bg-ink/70 border border-white/15 rounded-xl pl-8 pr-4 py-3 text-paper font-bold text-base focus:border-lime focus:outline-none transition-colors"
+                  placeholder="2000.00"
+                />
               </div>
+            </div>
+
+            <div>
+              <label htmlFor="monthly_limit_input" className="block text-xs font-mono text-paper/70 uppercase mb-2">
+                Monthly Budget Limit (₹)
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-paper/40 font-mono">₹</span>
+                <input
+                  id="monthly_limit_input"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={monthlyLimit}
+                  onChange={(e) => setMonthlyLimit(e.target.value)}
+                  className="w-full bg-ink/70 border border-white/15 rounded-xl pl-8 pr-4 py-3 text-paper font-bold text-base focus:border-lime focus:outline-none transition-colors"
+                  placeholder="10000.00"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Allowlisted Merchants */}
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-md shadow-sm">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
+            <div className="w-10 h-10 rounded-xl bg-lime/15 border border-lime/30 flex items-center justify-center text-lime">
+              <Store className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="font-display text-2xl font-bold text-paper">Trusted Merchants</h2>
+              <p className="text-paper/50 text-xs font-mono">Only transactions from approved merchants can be evaluated</p>
+            </div>
+          </div>
+
+          <div className="flex gap-3 mb-4">
+            <input
+              type="text"
+              value={merchantInput}
+              onChange={(e) => setMerchantInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddMerchant(e)}
+              placeholder="Add store (e.g., Apple, Croma, Swiggy, Uber)"
+              className="flex-1 bg-ink/70 border border-white/15 rounded-xl px-4 py-3 text-sm text-paper focus:border-lime focus:outline-none transition-colors placeholder-paper/30"
+            />
+            <button
+              type="button"
+              onClick={handleAddMerchant}
+              className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-paper font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add</span>
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-2">
+            {merchants.map((merchant) => (
+              <span
+                key={merchant}
+                className="inline-flex items-center gap-2 bg-ink/90 border border-white/15 rounded-full pl-4 pr-2.5 py-1.5 text-xs font-mono font-medium text-paper shadow-sm"
+              >
+                <span>{merchant}</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveMerchant(merchant)}
+                  className="p-0.5 rounded-full hover:bg-red-500/20 hover:text-red-400 text-paper/40 transition-colors cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            ))}
+            {merchants.length === 0 && (
+              <p className="text-xs text-amber-400 font-mono">No merchants allowlisted. All purchase intents will be blocked.</p>
             )}
           </div>
+        </div>
 
-          <button type="submit" className="w-full inline-flex items-center justify-center rounded-full font-bold bg-lime text-ink hover:brightness-95 transition-all h-14 text-lg" disabled={loading}>
-            {loading ? 'Saving...' : 'Save Policies'}
+        {/* Submit Action Bar */}
+        <div className="flex items-center justify-between pt-4">
+          <p className="text-xs font-mono text-paper/40">
+            Changes create an immutable audit record and update the active policy version.
+          </p>
+          <button
+            type="submit"
+            disabled={saving}
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-lime text-ink font-bold text-sm shadow-lg hover:brightness-105 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
+          >
+            <Save className="w-4 h-4" />
+            <span>{saving ? 'Updating Policies...' : 'Save & Enforce Limits'}</span>
           </button>
-        </form>
-      </div>
-    </section>
+        </div>
+      </form>
+    </div>
   );
 };
 

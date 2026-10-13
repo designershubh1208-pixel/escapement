@@ -11,6 +11,7 @@ from app.api.routes_payments import router as payments_router
 from app.api.routes_webhooks import router as webhooks_router
 from app.api.routes_ecommerce import router as ecommerce_router
 from app.api.routes_session_keys import router as session_keys_router
+from app.api.routes_auth import router as auth_router
 
 __all__ = [
     "chat_router",
@@ -25,5 +26,6 @@ __all__ = [
     "payments_router",
     "webhooks_router",
     "ecommerce_router",
-    "session_keys_router"
+    "session_keys_router",
+    "auth_router"
 ]

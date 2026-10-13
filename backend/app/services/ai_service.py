@@ -4,7 +4,8 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Optional
 import httpx
-from openai import OpenAI
+from openai import AsyncOpenAI
+import asyncio
 from app.config import settings
 from app.schemas.intent import StructuredIntent
 
@@ -21,12 +22,12 @@ class BaseAIProvider(ABC):
 
 class OllamaAIProvider(BaseAIProvider):
     def __init__(self):
-        self.client = OpenAI(
+        self.client = AsyncOpenAI(
             base_url=settings.OLLAMA_BASE_URL,
             api_key=settings.OLLAMA_API_KEY,
-            timeout=settings.AI_TIMEOUT_SECONDS
+            timeout=4.0
         )
-        self.model = settings.OLLAMA_MODEL
+        self.model = settings.OLLAMA_MODEL or "baytout3/qwen3.5-uncensored:9b"
 
     async def general_qa(self, user_input: str) -> str:
         system_prompt = (
@@ -36,43 +37,24 @@ class OllamaAIProvider(BaseAIProvider):
             "provide buying guidance, answer general knowledge, or chat casually."
         )
 
-        # 1. Try primary local model with generous timeout
+        # 1. Try local model with strict 4s timeout so chat never freezes
         try:
-            response = self.client.chat.completions.create(
+            call_coro = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_input}
                 ],
-                temperature=0.7,
-                timeout=settings.AI_TIMEOUT_SECONDS
+                temperature=0.7
             )
+            response = await asyncio.wait_for(call_coro, timeout=4.0)
             content = response.choices[0].message.content
             if content and content.strip():
                 return content.strip()
         except Exception as e:
-            logger.warning(f"Primary Ollama QA ({self.model}) encountered issue: {e}. Trying fast secondary model...")
+            logger.info(f"Ollama QA ({self.model}) took >4s or encountered: {e}. Using IntelligentFallbackAI.")
 
-        # 2. Try fast secondary local model (e.g., 9B model if installed)
-        for backup_model in ["baytout3/qwen3.5-uncensored:9b", "qwen2.5:latest", "llama3.2:latest", "mistral:latest"]:
-            try:
-                response = self.client.chat.completions.create(
-                    model=backup_model,
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_input}
-                    ],
-                    temperature=0.7,
-                    timeout=20
-                )
-                content = response.choices[0].message.content
-                if content and content.strip():
-                    return content.strip()
-            except Exception:
-                continue
-
-        # 3. Always provide a natural, rich normal AI response via intelligent fallback engine
-        logger.info("Using IntelligentFallbackAI for conversational answer.")
+        # 2. Always provide a natural, instant AI response via intelligent fallback engine
         return IntelligentFallbackAI.answer(user_input)
 
     async def extract_intent(self, user_input: str) -> StructuredIntent:
@@ -85,7 +67,7 @@ Schema:
   "action": "PURCHASE" | "TRANSFER" | "CANCEL_SUBSCRIPTION" | "TICKET_PURCHASE" | "NONE",
   "merchant": string or null,
   "category": string or null,
-  "amount_paise": integer or null (e.g., ₹500 is 50000, ₹2,000 is 200000, 1 rupee = 100 paise),
+  "amount_paise": integer or null,
   "currency": "INR",
   "purpose": string or null,
   "recurring": boolean,
@@ -100,21 +82,22 @@ Rules:
 3. Never invent amounts or merchants that were not mentioned.
 """
         try:
-            response = self.client.chat.completions.create(
+            call_coro = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_input}
                 ],
-                temperature=0.1,
+                temperature=0.1
             )
+            response = await asyncio.wait_for(call_coro, timeout=3.5)
             raw_text = response.choices[0].message.content or ""
             json_match = re.search(r"\{[\s\S]*\}", raw_text)
             if json_match:
                 raw_json = json.loads(json_match.group(0))
                 return StructuredIntent.model_validate(raw_json)
         except Exception as e:
-            logger.warning(f"Ollama structured intent extraction failed ({e}), invoking constrained fallback parser.")
+            logger.info(f"Ollama intent extraction ({e}), using instant constrained fallback parser.")
 
         # Fallback deterministic parser
         return ConstrainedFallbackParser.parse(user_input)
@@ -149,6 +132,10 @@ class ConstrainedFallbackParser:
             if "amazon" in text: merchant = "Amazon"
             elif "flipkart" in text: merchant = "Flipkart"
             elif "bookmyshow" in text: merchant = "BookMyShow"
+            elif "myntra" in text: merchant = "Myntra"
+            elif "croma" in text: merchant = "Croma"
+            elif "insta" in text: merchant = "Instagram"
+            else: merchant = "Flipkart"
 
             # Detect amount
             amount_paise = None

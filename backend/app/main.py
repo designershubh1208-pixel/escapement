@@ -19,7 +19,8 @@ from app.api import (
     payments_router,
     webhooks_router,
     ecommerce_router,
-    session_keys_router
+    session_keys_router,
+    auth_router
 )
 from app.services.background_worker import run_durable_background_worker
 
@@ -36,6 +37,23 @@ async def lifespan(app: FastAPI):
     try:
         engine = get_engine()
         Base.metadata.create_all(bind=engine)
+        
+        # Self-healing column migration for existing databases
+        with engine.connect() as conn:
+            try:
+                from sqlalchemy import inspect, text
+                inspector = inspect(engine)
+                existing_cols = [c["name"] for c in inspector.get_columns("users")]
+                if "phone_number" not in existing_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN phone_number VARCHAR(32)"))
+                if "password_hash" not in existing_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)"))
+                if "is_verified" not in existing_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT 0"))
+                conn.commit()
+            except Exception as mig_err:
+                logger.warning(f"Column check notice: {mig_err}")
+                
         logger.info("Database schemas initialized.")
     except Exception as e:
         logger.error(f"Schema creation error: {e}")
@@ -79,6 +97,7 @@ app.include_router(payments_router)
 app.include_router(webhooks_router)
 app.include_router(ecommerce_router)
 app.include_router(session_keys_router)
+app.include_router(auth_router)
 
 @app.get("/health", tags=["Health"])
 @app.get("/api/health", tags=["Health"])

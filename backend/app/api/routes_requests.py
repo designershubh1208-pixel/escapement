@@ -1,20 +1,27 @@
 import logging
-from typing import List
-from fastapi import APIRouter, Depends
+from typing import List, Optional
+from fastapi import APIRouter, Depends, Header
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.financial import Transaction
 from app.schemas.transaction import TransactionResponse
+from app.services.auth_service import AuthService
 
 logger = logging.getLogger("defai.api.requests")
 router = APIRouter(tags=["Requests & Transactions"])
 
 @router.get("/api/requests")
-def get_requests_feed(db: Session = Depends(get_db)):
+def get_requests_feed(
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
     """
-    Returns financial requests in the format expected by the frontend ChatInterface Request History.
+    Returns financial requests belonging strictly to the authenticated user.
     """
-    rows = db.query(Transaction).order_by(Transaction.created_at.desc()).all()
+    user_id = AuthService.resolve_user_id(db, authorization)
+    rows = db.query(Transaction).filter(
+        Transaction.user_id == user_id
+    ).order_by(Transaction.created_at.desc()).all()
     return [
         {
             "id": r.id,
@@ -43,8 +50,14 @@ def get_requests_feed(db: Session = Depends(get_db)):
     ]
 
 @router.get("/api/transactions", response_model=List[TransactionResponse])
-def get_all_transactions(db: Session = Depends(get_db)):
-    transactions = db.query(Transaction).order_by(Transaction.created_at.desc()).all()
+def get_all_transactions(
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    user_id = AuthService.resolve_user_id(db, authorization)
+    transactions = db.query(Transaction).filter(
+        Transaction.user_id == user_id
+    ).order_by(Transaction.created_at.desc()).all()
     return transactions
 
 @router.get("/api/transactions/{tx_id}", response_model=TransactionResponse)

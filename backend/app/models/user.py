@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy import Column, String, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -8,7 +8,10 @@ class User(Base):
 
     id = Column(String(64), primary_key=True, index=True)
     email = Column(String(255), unique=True, nullable=True)
+    phone_number = Column(String(32), unique=True, index=True, nullable=True)
+    password_hash = Column(String(255), nullable=True)
     name = Column(String(255), nullable=True)
+    is_verified = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

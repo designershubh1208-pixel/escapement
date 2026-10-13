@@ -14,13 +14,18 @@ import InsightsPage from './pages/InsightsPage';
 import InsightDetailPage from './pages/InsightDetailPage';
 import ChatInterface from './pages/ChatInterface';
 import SubscriptionTerminatorPage from './pages/SubscriptionTerminatorPage';
+import PolicyConfigurator from './pages/PolicyConfigurator';
 import SidebarLayout from './components/SidebarLayout';
 import QnAPage from './pages/QnAPage';
+import AuthPage from './pages/AuthPage';
+import OAuthCallbackPage from './pages/OAuthCallbackPage';
 import { ThemeProvider } from './context/ThemeContext';
+import { AuthProvider } from './context/AuthContext';
 
 function AppContent({ isLoading }) {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith('/dashboard');
+  const isAuthPage = ['/login', '/register', '/auth', '/auth/callback'].includes(location.pathname);
 
   return (
     <>
@@ -30,10 +35,14 @@ function AppContent({ isLoading }) {
       
       {!isLoading && (
         <div className="App">
-          <Header />
+          {!isAuthPage && !isDashboard && <Header />}
           <main>
             <Routes>
               <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<AuthPage defaultMode="login" />} />
+              <Route path="/register" element={<AuthPage defaultMode="register" />} />
+              <Route path="/auth" element={<AuthPage defaultMode="login" />} />
+              <Route path="/auth/callback" element={<OAuthCallbackPage />} />
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/work" element={<WorkPage />} />
               <Route path="/about" element={<AboutPage />} />
@@ -42,17 +51,21 @@ function AppContent({ isLoading }) {
               <Route path="/insights/:id" element={<InsightDetailPage />} />
               <Route path="/chat" element={<Navigate to="/dashboard/chat" replace />} />
               <Route path="/subscriptions" element={<Navigate to="/dashboard/subscriptions" replace />} />
+              <Route path="/policy" element={<Navigate to="/dashboard/limits" replace />} />
+              <Route path="/limits" element={<Navigate to="/dashboard/limits" replace />} />
               <Route path="/dashboard" element={<SidebarLayout />}>
                 <Route index element={<Navigate to="chat" replace />} />
                 <Route path="chat" element={<QnAPage />} />
                 <Route path="chat/:id" element={<QnAPage />} />
                 <Route path="request" element={<ChatInterface />} />
                 <Route path="subscriptions" element={<SubscriptionTerminatorPage />} />
+                <Route path="limits" element={<PolicyConfigurator />} />
+                <Route path="policy" element={<Navigate to="limits" replace />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
-          {!isDashboard && <Footer />}
+          {!isDashboard && !isAuthPage && <Footer />}
         </div>
       )}
     </>
@@ -98,7 +111,9 @@ function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
-        <AppContent isLoading={isLoading} />
+        <AuthProvider>
+          <AppContent isLoading={isLoading} />
+        </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
   );

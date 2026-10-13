@@ -2,15 +2,18 @@ import uuid
 import json
 import logging
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from app.database import get_db
+from app.models.user import User
 from app.models.chat import ChatSession, ChatMessage
 from app.models.financial import Transaction, Approval
 from app.models.policy import UserPolicy
 from app.schemas.chat import ChatMessageRequest, ChatResponse, ChatSessionItem, ChatMessageItem
 from app.config import settings
 from app.services.ai_service import ai_provider
+from app.services.auth_service import AuthService
 from app.services.policy_engine import DeterministicPolicyEngine
 from app.services.audit_service import AuditService
 from app.services.mock_payment import MockPaymentExecutor
@@ -24,11 +27,31 @@ logger = logging.getLogger("defai.api.chat")
 router = APIRouter(prefix="/api/chat", tags=["Chat"])
 
 @router.post("", response_model=ChatResponse)
-async def send_chat_message(req: ChatMessageRequest, db: Session = Depends(get_db)):
-    user_id = req.user_id or "user_1"
+async def send_chat_message(
+    req: ChatMessageRequest, 
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    # 0. Resolve user identity from Bearer token or fallback
+    user_id = AuthService.resolve_user_id(db, authorization, req.user_id)
+
+    # Ensure user exists in database so foreign key constraints never fail
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        user = User(
+            id=user_id,
+            name="Sentinel User",
+            email="user@defai.local",
+            is_verified=True
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        AuthService.ensure_user_environment(db, user.id)
+
     session_id = req.session_id
 
-    # 1. Authenticate user & ensure session exists
+    # 1. Authenticate user & ensure session exists for THIS user
     if not session_id:
         session_id = str(uuid.uuid4())
         session_title = (req.message[:35] + "...") if len(req.message) > 35 else req.message
@@ -36,7 +59,10 @@ async def send_chat_message(req: ChatMessageRequest, db: Session = Depends(get_d
         db.add(new_session)
         db.commit()
     else:
-        existing_session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
+        existing_session = db.query(ChatSession).filter(
+            ChatSession.id == session_id,
+            ChatSession.user_id == user_id
+        ).first()
         if not existing_session:
             session_title = (req.message[:35] + "...") if len(req.message) > 35 else req.message
             new_session = ChatSession(id=session_id, user_id=user_id, title=session_title)
@@ -76,8 +102,10 @@ async def send_chat_message(req: ChatMessageRequest, db: Session = Depends(get_d
         from app.services.live_ecommerce_scraper import LiveEcommerceScraperService
         comparison = await LiveEcommerceScraperService.compare_stores_and_get_summary(req.message)
         ai_response_text = comparison.get("summary_markdown")
-    else:
+    elif not intent or intent.action not in ["PURCHASE", "CANCEL_SUBSCRIPTION", "TRANSFER", "TICKET_PURCHASE"]:
         ai_response_text = await ai_provider.general_qa(req.message)
+    else:
+        ai_response_text = "Processing request..."
 
     has_financial_intent = False
     decision = "NONE"
@@ -342,12 +370,34 @@ async def send_chat_message(req: ChatMessageRequest, db: Session = Depends(get_d
     )
 
 @router.get("/sessions", response_model=list[ChatSessionItem])
-def list_chat_sessions(db: Session = Depends(get_db)):
-    sessions = db.query(ChatSession).order_by(ChatSession.created_at.desc()).all()
+def list_chat_sessions(
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Returns only the chat sessions belonging to the authenticated user."""
+    user_id = AuthService.resolve_user_id(db, authorization)
+    sessions = db.query(ChatSession).filter(
+        ChatSession.user_id == user_id
+    ).order_by(ChatSession.created_at.desc()).all()
     return sessions
 
 @router.get("/sessions/{session_id}", response_model=list[ChatMessageItem])
-def get_chat_session_messages(session_id: str, db: Session = Depends(get_db)):
+def get_chat_session_messages(
+    session_id: str, 
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Returns messages for a session only if it belongs to the authenticated user."""
+    user_id = AuthService.resolve_user_id(db, authorization)
+    
+    # Verify session ownership
+    session = db.query(ChatSession).filter(
+        ChatSession.id == session_id,
+        ChatSession.user_id == user_id
+    ).first()
+    if not session:
+        return []
+
     messages = db.query(ChatMessage).filter(
         ChatMessage.session_id == session_id
     ).order_by(ChatMessage.created_at.asc()).all()
@@ -361,3 +411,22 @@ def get_chat_session_messages(session_id: str, db: Session = Depends(get_db)):
         )
         for m in messages
     ]
+
+@router.delete("/sessions/{session_id}")
+def delete_chat_session(
+    session_id: str,
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Deletes a chat session and its messages if owned by the authenticated user."""
+    user_id = AuthService.resolve_user_id(db, authorization)
+    session = db.query(ChatSession).filter(
+        ChatSession.id == session_id,
+        ChatSession.user_id == user_id
+    ).first()
+    if session:
+        db.query(ChatMessage).filter(ChatMessage.session_id == session_id).delete()
+        db.delete(session)
+        db.commit()
+        return {"success": True, "message": "Chat session deleted"}
+    return {"success": False, "message": "Session not found"}

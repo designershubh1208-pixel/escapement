@@ -12,7 +12,10 @@ import {
   XCircle,
   Zap,
   Calendar,
-  Layers
+  Layers,
+  Plus,
+  Trash2,
+  X
 } from 'lucide-react';
 
 const SubscriptionTerminatorPage = () => {
@@ -25,6 +28,16 @@ const SubscriptionTerminatorPage = () => {
   const [quickLoading, setQuickLoading] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [filter, setFilter] = useState('ALL'); // ALL, ACTIVE, TERMINATED
+
+  // Add Subscription Modal State
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newService, setNewService] = useState({
+    service_name: '',
+    plan_name: '',
+    amount_rupees: '',
+    billing_cycle: 'monthly'
+  });
+  const [isSubmittingNew, setIsSubmittingNew] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -110,6 +123,44 @@ const SubscriptionTerminatorPage = () => {
       });
     } finally {
       setQuickLoading(false);
+    }
+  };
+
+  const handleAddSubscription = async (e) => {
+    e.preventDefault();
+    if (!newService.service_name.trim() || !newService.amount_rupees) return;
+    setIsSubmittingNew(true);
+    try {
+      await axios.post('/api/subscriptions', {
+        service_name: newService.service_name.trim(),
+        plan_name: newService.plan_name.trim() || 'Standard',
+        amount_rupees: parseFloat(newService.amount_rupees),
+        billing_cycle: newService.billing_cycle
+      });
+      setShowAddModal(false);
+      setNewService({ service_name: '', plan_name: '', amount_rupees: '', billing_cycle: 'monthly' });
+      setFeedback({
+        type: 'success',
+        message: `Successfully added ${newService.service_name} to monitored subscriptions.`
+      });
+      fetchData();
+    } catch (err) {
+      console.error('Failed to add subscription', err);
+      setFeedback({
+        type: 'error',
+        message: 'Failed to add subscription.'
+      });
+    } finally {
+      setIsSubmittingNew(false);
+    }
+  };
+
+  const handleDeleteSubscription = async (subId) => {
+    try {
+      await axios.delete(`/api/subscriptions/${subId}`);
+      setSubscriptions(prev => prev.filter(s => s.id !== subId));
+    } catch (err) {
+      console.error('Failed to delete subscription', err);
     }
   };
 
@@ -279,95 +330,131 @@ const SubscriptionTerminatorPage = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 p-1 bg-ink/40 border border-white/10 rounded-xl self-start sm:self-auto">
-            {['ALL', 'ACTIVE', 'TERMINATED'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setFilter(tab)}
-                className={`px-3 py-1 rounded-lg text-xs font-mono transition-all ${
-                  filter === tab
-                    ? 'bg-lime text-ink font-bold shadow-sm'
-                    : 'text-paper/60 hover:text-paper hover:bg-white/5'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-lime text-ink font-bold text-xs shadow-sm hover:brightness-105 transition-all cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Subscription</span>
+            </button>
+
+            <div className="flex items-center gap-1 p-1 bg-ink/40 border border-white/10 rounded-xl">
+              {['ALL', 'ACTIVE', 'TERMINATED'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setFilter(tab)}
+                  className={`px-3 py-1 rounded-lg text-xs font-mono transition-all ${
+                    filter === tab
+                      ? 'bg-lime text-ink font-bold shadow-sm'
+                      : 'text-paper/60 hover:text-paper hover:bg-white/5'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredSubs.map((sub) => {
-            const isCancelling = terminatingService === sub.service_name;
-            const isCancelled = sub.status === 'CANCELLED' || sub.status === 'EXPIRED';
-
-            return (
-              <div
-                key={sub.id}
-                className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between transition-all hover:border-white/20 shadow-sm"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-4 mb-3">
-                    <div>
-                      <h3 className="font-display text-xl font-bold text-paper">
-                        {sub.service_name}
-                      </h3>
-                      <p className="text-xs font-mono text-paper/50 mt-0.5">
-                        Plan: <span className="text-paper/80 font-medium">{sub.plan_name}</span>
-                      </p>
-                    </div>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase font-mono ${getSubStatusBadge(sub.status)}`}>
-                      {sub.status}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 py-3 border-y border-white/5 my-3 text-xs font-mono">
-                    <div>
-                      <span className="text-paper/40 block">Billing Rate:</span>
-                      <span className="text-paper font-semibold text-sm">
-                        ₹{sub.amount_rupees.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                        <span className="text-xs text-paper/40 font-normal"> / {sub.billing_cycle}</span>
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-paper/40 block">Protection:</span>
-                      <span className={isCancelled ? "text-lime font-semibold" : "text-amber-400 font-semibold"}>
-                        {isCancelled ? "Ghost billing blocked" : "Monitored by sentinel"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-2 flex items-center justify-between gap-3">
-                  <span className="text-[11px] font-mono text-paper/40">
-                    {sub.trial_ends_at ? `Trial ended: ${new Date(sub.trial_ends_at).toLocaleDateString()}` : `Registered: ${new Date(sub.created_at).toLocaleDateString()}`}
-                  </span>
-
-                  {!isCancelled ? (
-                    <button
-                      onClick={() => handleTerminateSubscription(sub.service_name)}
-                      disabled={isCancelling}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-red-500/15 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 transition-all shadow-sm active:scale-95 disabled:opacity-50"
-                      title="Terminate this subscription immediately"
-                    >
-                      <Scissors className="w-3.5 h-3.5" />
-                      <span>{isCancelling ? 'Terminating...' : 'Terminate Now'}</span>
-                    </button>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-xs font-mono text-lime/80">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Terminated</span>
-                    </span>
-                  )}
-                </div>
+          {subscriptions.length === 0 ? (
+            <div className="col-span-1 md:col-span-2 py-12 px-6 text-center bg-white/5 border border-white/10 rounded-2xl flex flex-col items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-lime/10 border border-lime/20 flex items-center justify-center text-lime mb-3">
+                <CreditCard className="w-6 h-6" />
               </div>
-            );
-          })}
-
-          {filteredSubs.length === 0 && (
-            <div className="col-span-2 py-12 text-center bg-white/5 border border-white/10 rounded-2xl text-paper/40 font-mono text-sm">
+              <h3 className="font-display text-lg font-bold text-paper mb-1">No Monitored Subscriptions</h3>
+              <p className="text-paper/50 font-mono text-xs max-w-md mb-5">
+                No mock data is added. Add your real subscriptions to enable automated renewal monitoring and AI cancellation defense.
+              </p>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-lime text-ink font-bold text-xs shadow-md hover:brightness-105 active:scale-95 transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Real Subscription</span>
+              </button>
+            </div>
+          ) : filteredSubs.length === 0 ? (
+            <div className="col-span-1 md:col-span-2 py-12 text-center bg-white/5 border border-white/10 rounded-2xl text-paper/40 font-mono text-sm">
               No subscriptions match the selected filter.
             </div>
+          ) : (
+            filteredSubs.map((sub) => {
+              const isCancelling = terminatingService === sub.service_name;
+              const isCancelled = sub.status === 'CANCELLED' || sub.status === 'EXPIRED';
+
+              return (
+                <div
+                  key={sub.id}
+                  className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between transition-all hover:border-white/20 shadow-sm relative group"
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <div>
+                        <h3 className="font-display text-xl font-bold text-paper">
+                          {sub.service_name}
+                        </h3>
+                        <p className="text-xs font-mono text-paper/50 mt-0.5">
+                          Plan: <span className="text-paper/80 font-medium">{sub.plan_name}</span>
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase font-mono ${getSubStatusBadge(sub.status)}`}>
+                          {sub.status}
+                        </span>
+                        <button
+                          onClick={() => handleDeleteSubscription(sub.id)}
+                          className="opacity-0 group-hover:opacity-100 hover:text-red-400 text-paper/30 transition-opacity p-1 rounded-lg cursor-pointer"
+                          title="Remove from monitoring"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 py-3 border-y border-white/5 my-3 text-xs font-mono">
+                      <div>
+                        <span className="text-paper/40 block">Billing Rate:</span>
+                        <span className="text-paper font-semibold text-sm">
+                          ₹{sub.amount_rupees.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          <span className="text-xs text-paper/40 font-normal"> / {sub.billing_cycle}</span>
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-paper/40 block">Protection:</span>
+                        <span className={isCancelled ? "text-lime font-semibold" : "text-amber-400 font-semibold"}>
+                          {isCancelled ? "Ghost billing blocked" : "Monitored by sentinel"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-mono text-paper/40">
+                      {sub.trial_ends_at ? `Trial ended: ${new Date(sub.trial_ends_at).toLocaleDateString()}` : `Registered: ${new Date(sub.created_at).toLocaleDateString()}`}
+                    </span>
+
+                    {!isCancelled ? (
+                      <button
+                        onClick={() => handleTerminateSubscription(sub.service_name)}
+                        disabled={isCancelling}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-red-500/15 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 transition-all shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
+                        title="Terminate this subscription immediately"
+                      >
+                        <Scissors className="w-3.5 h-3.5" />
+                        <span>{isCancelling ? 'Terminating...' : 'Terminate Now'}</span>
+                      </button>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs font-mono text-lime/80">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Terminated</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })
           )}
         </div>
       </div>
@@ -512,11 +599,105 @@ const SubscriptionTerminatorPage = () => {
             <div className="mt-6 pt-4 border-t border-black/5 dark:border-white/10 flex justify-end">
               <button
                 onClick={() => setSelectedRequest(null)}
-                className="px-5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-paper transition-all"
+                className="px-5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-paper transition-all cursor-pointer"
               >
                 Close Record
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Subscription Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-ink border border-white/15 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative">
+            <button
+              onClick={() => setShowAddModal(false)}
+              className="absolute top-6 right-6 p-2 rounded-full text-paper/40 hover:text-paper hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-lime/15 border border-lime/30 flex items-center justify-center text-lime">
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-display text-xl font-bold text-paper">Add Real Subscription</h3>
+                <p className="text-paper/50 text-xs font-mono">Monitor and safeguard your real recurring service</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleAddSubscription} className="space-y-4">
+              <div>
+                <label className="block text-xs font-mono text-paper/70 uppercase mb-1.5">Service Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={newService.service_name}
+                  onChange={(e) => setNewService(prev => ({ ...prev, service_name: e.target.value }))}
+                  placeholder="e.g. Netflix, Spotify, ChatGPT Plus, Gym"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-paper focus:border-lime focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-mono text-paper/70 uppercase mb-1.5">Plan / Tier</label>
+                  <input
+                    type="text"
+                    value={newService.plan_name}
+                    onChange={(e) => setNewService(prev => ({ ...prev, plan_name: e.target.value }))}
+                    placeholder="e.g. Premium 4K, Pro"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-paper focus:border-lime focus:outline-none transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono text-paper/70 uppercase mb-1.5">Amount (₹) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={newService.amount_rupees}
+                    onChange={(e) => setNewService(prev => ({ ...prev, amount_rupees: e.target.value }))}
+                    placeholder="649.00"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-paper focus:border-lime focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-paper/70 uppercase mb-1.5">Billing Cycle</label>
+                <select
+                  value={newService.billing_cycle}
+                  onChange={(e) => setNewService(prev => ({ ...prev, billing_cycle: e.target.value }))}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-paper focus:border-lime focus:outline-none transition-colors"
+                >
+                  <option value="monthly" className="bg-ink text-paper">Monthly</option>
+                  <option value="yearly" className="bg-ink text-paper">Yearly</option>
+                  <option value="weekly" className="bg-ink text-paper">Weekly</option>
+                  <option value="trial" className="bg-ink text-paper">Free Trial</option>
+                </select>
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-paper/60 hover:text-paper hover:bg-white/5 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingNew || !newService.service_name.trim() || !newService.amount_rupees}
+                  className="px-6 py-2.5 rounded-xl text-xs font-bold bg-lime text-ink hover:brightness-105 disabled:opacity-50 transition-all shadow-md active:scale-95 cursor-pointer"
+                >
+                  {isSubmittingNew ? 'Adding...' : 'Add to Monitoring'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
