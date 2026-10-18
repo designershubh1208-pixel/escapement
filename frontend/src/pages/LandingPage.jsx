@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import StarterPayHero from '../components/StarterPayHero';
+import DeFAISentinelHero from '../components/DeFAISentinelHero';
 
 const wordVariants = {
   hidden: { y: "110%" },
@@ -90,8 +90,8 @@ const StoryScrollSection = () => {
 const LandingPage = () => {
   return (
     <div className="bg-ink min-h-screen">
-      {/* StarterPay Inspired Hero Section (Exact replica of design and layout in light and dark theme) */}
-      <StarterPayHero />
+      {/* Pixel-Accurate DeFAI Sentinel Hero Section matching Figma reference */}
+      <DeFAISentinelHero />
 
       {/* StoryTelling Scroll Section replacing the static 'What we do' section */}
       <StoryScrollSection />

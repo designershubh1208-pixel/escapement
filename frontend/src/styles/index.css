@@ -159,3 +159,52 @@ html:not(.dark) .skeleton-shimmer::after {
 html:not(.dark) .skeleton-bone {
   background-color: rgba(0, 0, 0, 0.09);
 }
+
+/* ========================================================================== */
+/* Hero Section Connector Path Traveling Glow Pulse Animation                */
+/* ========================================================================== */
+@keyframes connectorTravel {
+  0% {
+    stroke-dashoffset: 360;
+  }
+  100% {
+    stroke-dashoffset: -360;
+  }
+}
+
+.connector-pulse {
+  animation: connectorTravel 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  opacity: 0.95;
+}
+
+.pulse-delay-1 {
+  animation-delay: 0s;
+}
+
+.pulse-delay-2 {
+  animation-delay: 0.7s;
+}
+
+.pulse-delay-3 {
+  animation-delay: 1.4s;
+}
+
+.pulse-delay-4 {
+  animation-delay: 0.35s;
+}
+
+.pulse-delay-5 {
+  animation-delay: 1.05s;
+}
+
+.pulse-delay-6 {
+  animation-delay: 1.75s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connector-pulse {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 0.4;
+  }
+}
