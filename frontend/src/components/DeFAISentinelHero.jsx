@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import CentralDatabaseIllustration from './CentralDatabaseIllustration';
 
 // Six geometric icons matching the reference's outlined tech icon aesthetic
 const BotIcon = () => (
@@ -160,20 +159,20 @@ export default function DeFAISentinelHero() {
         </motion.div>
 
         {/* ============================================================== */}
-        {/* 3. CENTRAL DATABASE ILLUSTRATION & 6 CONNECTED LABELS          */}
-        {/* Exact Symmetrical Right-Angled SVG Connectors & Smooth Glow     */}
-        {/* ViewBox: 1000 x 440                                           */}
-        {/* Left Pills anchor: X=275; Right Pills anchor: X=725             */}
-        {/* Database Center: X=500. Left edge: X=430; Right edge: X=570     */}
+        {/* 3. UNIFIED SVG SYSTEM: CONNECTORS + CENTRAL DATABASE STACK     */}
+        {/* Both SVG paths and 3D database share the EXACT coordinate grid */}
+        {/* ViewBox: 1000 x 440. Center X = 500.                            */}
+        {/* Server Stack: X from 432 to 568. Center = 500.                */}
+        {/* Tier 1 Y=130..182; Tier 2 Y=182..234; Tier 3 Y=234..286       */}
+        {/* Platform Y=280..380                                           */}
         {/* ============================================================== */}
         <div className="relative w-full max-w-5xl mx-auto px-2 select-none">
           
           {/* Desktop & Tablet Diagram Layout */}
           <div className="relative hidden md:block w-full h-[410px] lg:h-[440px]">
             
-            {/* SVG Connector Geometry with Traveling Glowing Pulses */}
             <svg
-              className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible"
+              className="absolute inset-0 w-full h-full overflow-visible"
               viewBox="0 0 1000 440"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -192,65 +191,98 @@ export default function DeFAISentinelHero() {
                   <feGaussianBlur stdDeviation="2.5" result="blur" />
                   <feComposite in="SourceGraphic" in2="blur" operator="over" />
                 </filter>
+
+                {/* Platform Shading Gradients */}
+                <linearGradient id="platTopGrad" x1="370" y1="300" x2="630" y2="350" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#A7F3D0" />
+                  <stop offset="50%" stopColor="#6EE7B7" />
+                  <stop offset="100%" stopColor="#34D399" />
+                </linearGradient>
+
+                <linearGradient id="platLeftGrad" x1="370" y1="315" x2="500" y2="375" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#86EFAC" />
+                  <stop offset="100%" stopColor="#4ADE80" />
+                </linearGradient>
+
+                <linearGradient id="platRightGrad" x1="500" y1="315" x2="630" y2="375" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#22C55E" />
+                  <stop offset="100%" stopColor="#15803D" />
+                </linearGradient>
+
+                {/* Server Shading Gradients */}
+                <linearGradient id="srvLidGrad" x1="432" y1="110" x2="568" y2="155" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#F8FAFC" />
+                  <stop offset="50%" stopColor="#E2E8F0" />
+                  <stop offset="100%" stopColor="#CBD5E1" />
+                </linearGradient>
+
+                <linearGradient id="srvLeftGrad" x1="432" y1="130" x2="500" y2="280" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#CBD5E1" />
+                  <stop offset="100%" stopColor="#94A3B8" />
+                </linearGradient>
+
+                <linearGradient id="srvRightGrad" x1="500" y1="130" x2="568" y2="280" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#94A3B8" />
+                  <stop offset="100%" stopColor="#64748B" />
+                </linearGradient>
               </defs>
 
               {/* ----------------- BASE STATIC CONNECTOR PATHS ----------------- */}
-              {/* Left Top: AI Agent Integration (X: 275, Y: 75) -> Server Tier 1 (X: 430, Y: 185) */}
+              {/* Left Top: AI Agent Integration (X: 275, Y: 75) -> Server Tier 1 (X: 432, Y: 155) */}
               <path
-                d="M 275 75 L 390 75 L 390 185 L 430 185"
-                className="stroke-zinc-400/40 dark:stroke-zinc-600/50"
+                d="M 275 75 L 380 75 L 380 155 L 432 155"
+                className="stroke-zinc-400/50 dark:stroke-zinc-600/60"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
 
-              {/* Left Mid: Policy Engine (X: 275, Y: 220) -> Server Tier 2 (X: 430, Y: 220) */}
+              {/* Left Mid: Policy Engine (X: 275, Y: 208) -> Server Tier 2 (X: 432, Y: 208) */}
               <path
-                d="M 275 220 L 430 220"
-                className="stroke-zinc-400/40 dark:stroke-zinc-600/50"
+                d="M 275 208 L 432 208"
+                className="stroke-zinc-400/50 dark:stroke-zinc-600/60"
                 strokeWidth="1.5"
                 strokeLinecap="round"
               />
 
-              {/* Left Bot: Spend Control (X: 275, Y: 355) -> Server Tier 3 (X: 430, Y: 255) */}
+              {/* Left Bot: Spend Control (X: 275, Y: 345) -> Server Tier 3 (X: 432, Y: 260) */}
               <path
-                d="M 275 355 L 390 355 L 390 255 L 430 255"
-                className="stroke-zinc-400/40 dark:stroke-zinc-600/50"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-
-              {/* Right Top: Approval Workflow (X: 725, Y: 75) -> Server Tier 1 (X: 570, Y: 185) */}
-              <path
-                d="M 725 75 L 610 75 L 610 185 L 570 185"
-                className="stroke-zinc-400/40 dark:stroke-zinc-600/50"
+                d="M 275 345 L 380 345 L 380 260 L 432 260"
+                className="stroke-zinc-400/50 dark:stroke-zinc-600/60"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
 
-              {/* Right Mid: Audit Trail (X: 725, Y: 220) -> Server Tier 2 (X: 570, Y: 220) */}
+              {/* Right Top: Approval Workflow (X: 725, Y: 75) -> Server Tier 1 (X: 568, Y: 155) */}
               <path
-                d="M 725 220 L 570 220"
-                className="stroke-zinc-400/40 dark:stroke-zinc-600/50"
+                d="M 725 75 L 620 75 L 620 155 L 568 155"
+                className="stroke-zinc-400/50 dark:stroke-zinc-600/60"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+
+              {/* Right Mid: Audit Trail (X: 725, Y: 208) -> Server Tier 2 (X: 568, Y: 208) */}
+              <path
+                d="M 725 208 L 568 208"
+                className="stroke-zinc-400/50 dark:stroke-zinc-600/60"
                 strokeWidth="1.5"
                 strokeLinecap="round"
               />
 
-              {/* Right Bot: Transaction Monitoring (X: 725, Y: 355) -> Server Tier 3 (X: 570, Y: 255) */}
+              {/* Right Bot: Transaction Monitoring (X: 725, Y: 345) -> Server Tier 3 (X: 568, Y: 260) */}
               <path
-                d="M 725 355 L 610 355 L 610 255 L 570 255"
-                className="stroke-zinc-400/40 dark:stroke-zinc-600/50"
+                d="M 725 345 L 620 345 L 620 260 L 568 260"
+                className="stroke-zinc-400/50 dark:stroke-zinc-600/60"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
 
               {/* ----------------- ANIMATED TRAVELING GLOW PULSES ----------------- */}
-              {/* Path 1 Glow: Left Top */}
               <path
-                d="M 275 75 L 390 75 L 390 185 L 430 185"
+                d="M 275 75 L 380 75 L 380 155 L 432 155"
                 stroke="url(#glowPulseGrad)"
                 strokeWidth="2.5"
                 strokeDasharray="40 320"
@@ -258,9 +290,8 @@ export default function DeFAISentinelHero() {
                 filter="url(#softGlow)"
               />
 
-              {/* Path 2 Glow: Left Mid */}
               <path
-                d="M 275 220 L 430 220"
+                d="M 275 208 L 432 208"
                 stroke="url(#glowPulseGrad)"
                 strokeWidth="2.5"
                 strokeDasharray="30 200"
@@ -268,9 +299,8 @@ export default function DeFAISentinelHero() {
                 filter="url(#softGlow)"
               />
 
-              {/* Path 3 Glow: Left Bot */}
               <path
-                d="M 275 355 L 390 355 L 390 255 L 430 255"
+                d="M 275 345 L 380 345 L 380 260 L 432 260"
                 stroke="url(#glowPulseGrad)"
                 strokeWidth="2.5"
                 strokeDasharray="40 320"
@@ -278,9 +308,8 @@ export default function DeFAISentinelHero() {
                 filter="url(#softGlow)"
               />
 
-              {/* Path 4 Glow: Right Top */}
               <path
-                d="M 725 75 L 610 75 L 610 185 L 570 185"
+                d="M 725 75 L 620 75 L 620 155 L 568 155"
                 stroke="url(#glowPulseGrad)"
                 strokeWidth="2.5"
                 strokeDasharray="40 320"
@@ -288,9 +317,8 @@ export default function DeFAISentinelHero() {
                 filter="url(#softGlow)"
               />
 
-              {/* Path 5 Glow: Right Mid */}
               <path
-                d="M 725 220 L 570 220"
+                d="M 725 208 L 568 208"
                 stroke="url(#glowPulseGrad)"
                 strokeWidth="2.5"
                 strokeDasharray="30 200"
@@ -298,9 +326,8 @@ export default function DeFAISentinelHero() {
                 filter="url(#softGlow)"
               />
 
-              {/* Path 6 Glow: Right Bot */}
               <path
-                d="M 725 355 L 610 355 L 610 255 L 570 255"
+                d="M 725 345 L 620 345 L 620 260 L 568 260"
                 stroke="url(#glowPulseGrad)"
                 strokeWidth="2.5"
                 strokeDasharray="40 320"
@@ -308,27 +335,140 @@ export default function DeFAISentinelHero() {
                 filter="url(#softGlow)"
               />
 
-              {/* Endpoint Junction Dots on Server Stack */}
-              <circle cx="430" cy="185" r="3" fill="#84cc16" opacity="0.8" />
-              <circle cx="430" cy="220" r="3" fill="#84cc16" opacity="0.8" />
-              <circle cx="430" cy="255" r="3" fill="#84cc16" opacity="0.8" />
-              <circle cx="570" cy="185" r="3" fill="#84cc16" opacity="0.8" />
-              <circle cx="570" cy="220" r="3" fill="#84cc16" opacity="0.8" />
-              <circle cx="570" cy="255" r="3" fill="#84cc16" opacity="0.8" />
-            </svg>
+              {/* ======================================================== */}
+              {/* CENTRAL ISOMETRIC DATABASE STACK & MINT PLATFORM         */}
+              {/* Mathematically locked at X=500. Direct vector rendering. */}
+              {/* ======================================================== */}
+              
+              {/* Platform Ambient Drop Shadow */}
+              <ellipse cx="500" cy="372" rx="145" ry="24" fill="rgba(34, 197, 94, 0.28)" filter="blur(16px)" />
+              <ellipse cx="500" cy="376" rx="115" ry="16" fill="rgba(10, 20, 10, 0.22)" filter="blur(10px)" />
 
-            {/* ----------------- CENTRAL FLOATING DATABASE ----------------- */}
-            <motion.div
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none"
-            >
-              <CentralDatabaseIllustration />
-            </motion.div>
+              {/* Mint Geometric Platform Base */}
+              {/* Left Face */}
+              <path
+                d="M 370 336 L 500 378 L 500 398 L 370 356 Z"
+                fill="url(#platLeftGrad)"
+              />
+              {/* Right Face */}
+              <path
+                d="M 500 378 L 630 336 L 630 356 L 500 398 Z"
+                fill="url(#platRightGrad)"
+              />
+              {/* Center Bevel Line */}
+              <line x1="500" y1="378" x2="500" y2="398" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+              {/* Top Diamond Surface */}
+              <path
+                d="M 500 294 L 630 336 L 500 378 L 370 336 Z"
+                fill="url(#platTopGrad)"
+                stroke="rgba(255,255,255,0.6)"
+                strokeWidth="1.2"
+              />
+              {/* Inner Rim Accent */}
+              <path
+                d="M 500 297 L 624 336 L 500 374 L 376 336 Z"
+                fill="none"
+                stroke="rgba(255,255,255,0.3)"
+                strokeWidth="0.8"
+              />
+              {/* Shadow Cast by Server on Platform */}
+              <path
+                d="M 500 320 L 570 342 L 500 364 L 430 342 Z"
+                fill="rgba(21, 128, 61, 0.45)"
+                filter="blur(4px)"
+              />
+
+              {/* ----------------- TIER 3 (BOTTOM SERVER LAYER) ----------------- */}
+              {/* Left Face */}
+              <path
+                d="M 432 234 L 500 256 L 500 286 L 432 264 Z"
+                fill="url(#srvLeftGrad)"
+                stroke="rgba(255,255,255,0.2)"
+                strokeWidth="0.5"
+              />
+              {/* Right Face */}
+              <path
+                d="M 500 256 L 568 234 L 568 264 L 500 286 Z"
+                fill="url(#srvRightGrad)"
+                stroke="rgba(255,255,255,0.15)"
+                strokeWidth="0.5"
+              />
+              {/* Tier 3 Details: LED + Slot Lines */}
+              <circle cx="516" cy="270" r="3" fill="#E2E8F0" />
+              <circle cx="516" cy="270" r="1.5" fill="#38BDF8" />
+              <line x1="528" y1="264" x2="552" y2="256" stroke="#CBD5E1" strokeWidth="2.5" strokeLinecap="round" />
+              <line x1="528" y1="271" x2="546" y2="265" stroke="#CBD5E1" strokeWidth="2.5" strokeLinecap="round" />
+              {/* Seam Separators */}
+              <path d="M 432 234 L 500 256 L 568 234" fill="none" stroke="#FFFFFF" strokeWidth="1.2" opacity="0.75" />
+              <path d="M 432 235 L 500 257 L 568 235" fill="none" stroke="#475569" strokeWidth="0.8" opacity="0.5" />
+
+              {/* ----------------- TIER 2 (MIDDLE SERVER LAYER) ----------------- */}
+              {/* Left Face */}
+              <path
+                d="M 432 182 L 500 204 L 500 234 L 432 212 Z"
+                fill="url(#srvLeftGrad)"
+                stroke="rgba(255,255,255,0.2)"
+                strokeWidth="0.5"
+              />
+              {/* Right Face */}
+              <path
+                d="M 500 204 L 568 182 L 568 212 L 500 234 Z"
+                fill="url(#srvRightGrad)"
+                stroke="rgba(255,255,255,0.15)"
+                strokeWidth="0.5"
+              />
+              {/* Tier 2 Details: LED + Slot Lines */}
+              <circle cx="516" cy="218" r="3" fill="#E2E8F0" />
+              <circle cx="516" cy="218" r="1.5" fill="#4ADE80" />
+              <line x1="528" y1="212" x2="552" y2="204" stroke="#CBD5E1" strokeWidth="2.5" strokeLinecap="round" />
+              <line x1="528" y1="219" x2="546" y2="213" stroke="#CBD5E1" strokeWidth="2.5" strokeLinecap="round" />
+              {/* Seam Separators */}
+              <path d="M 432 182 L 500 204 L 568 182" fill="none" stroke="#FFFFFF" strokeWidth="1.2" opacity="0.75" />
+              <path d="M 432 183 L 500 205 L 568 183" fill="none" stroke="#475569" strokeWidth="0.8" opacity="0.5" />
+
+              {/* ----------------- TIER 1 (TOP SERVER LAYER) ----------------- */}
+              {/* Left Face */}
+              <path
+                d="M 432 130 L 500 152 L 500 182 L 432 160 Z"
+                fill="url(#srvLeftGrad)"
+                stroke="rgba(255,255,255,0.2)"
+                strokeWidth="0.5"
+              />
+              {/* Right Face */}
+              <path
+                d="M 500 152 L 568 130 L 568 160 L 500 182 Z"
+                fill="url(#srvRightGrad)"
+                stroke="rgba(255,255,255,0.15)"
+                strokeWidth="0.5"
+              />
+              {/* Tier 1 Details: LED + Slot Lines */}
+              <circle cx="516" cy="166" r="3" fill="#E2E8F0" />
+              <circle cx="516" cy="166" r="1.5" fill="#A855F7" />
+              <line x1="528" y1="160" x2="552" y2="152" stroke="#CBD5E1" strokeWidth="2.5" strokeLinecap="round" />
+              <line x1="528" y1="167" x2="546" y2="161" stroke="#CBD5E1" strokeWidth="2.5" strokeLinecap="round" />
+
+              {/* ----------------- SERVER TOP ROOF CAP ----------------- */}
+              <path
+                d="M 496 109 C 498 108, 502 108, 504 109 L 566 129 C 568 130, 568 132, 566 133 L 504 153 C 502 154, 498 154, 496 153 L 434 133 C 432 132, 432 130, 434 129 Z"
+                fill="url(#srvLidGrad)"
+                stroke="rgba(255,255,255,0.9)"
+                strokeWidth="1.2"
+              />
+              {/* Center Spine Highlight */}
+              <line x1="500" y1="152" x2="500" y2="286" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+
+              {/* Connector Landing Nodes (Touching Connector Endpoints Perfectly) */}
+              <circle cx="432" cy="155" r="3" fill="#84cc16" />
+              <circle cx="432" cy="208" r="3" fill="#84cc16" />
+              <circle cx="432" cy="260" r="3" fill="#84cc16" />
+              <circle cx="568" cy="155" r="3" fill="#84cc16" />
+              <circle cx="568" cy="208" r="3" fill="#84cc16" />
+              <circle cx="568" cy="260" r="3" fill="#84cc16" />
+            </svg>
 
             {/* ----------------- 6 FEATURE LABELS (Accurate Centered Anchors) ----------------- */}
             
-            {/* Left 1: AI Agent Integration (Y: 75) */}
+            {/* Left 1: AI Agent Integration (Y: 75px) */}
             <div className="absolute right-[72.5%] top-[75px] -translate-y-1/2 z-20">
               <div className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full border border-black/10 dark:border-white/15 bg-white dark:bg-[#121413] shadow-[0_4px_16px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all hover:scale-105 duration-200">
                 <BotIcon />
@@ -338,8 +478,8 @@ export default function DeFAISentinelHero() {
               </div>
             </div>
 
-            {/* Left 2: Policy Engine (Y: 220) */}
-            <div className="absolute right-[72.5%] top-[220px] -translate-y-1/2 z-20">
+            {/* Left 2: Policy Engine (Y: 208px) */}
+            <div className="absolute right-[72.5%] top-[208px] -translate-y-1/2 z-20">
               <div className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full border border-black/10 dark:border-white/15 bg-white dark:bg-[#121413] shadow-[0_4px_16px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all hover:scale-105 duration-200">
                 <ShieldIcon />
                 <span className="text-xs sm:text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
@@ -348,8 +488,8 @@ export default function DeFAISentinelHero() {
               </div>
             </div>
 
-            {/* Left 3: Spend Control (Y: 355) */}
-            <div className="absolute right-[72.5%] top-[355px] -translate-y-1/2 z-20">
+            {/* Left 3: Spend Control (Y: 345px) */}
+            <div className="absolute right-[72.5%] top-[345px] -translate-y-1/2 z-20">
               <div className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full border border-black/10 dark:border-white/15 bg-white dark:bg-[#121413] shadow-[0_4px_16px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all hover:scale-105 duration-200">
                 <WalletIcon />
                 <span className="text-xs sm:text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
@@ -358,7 +498,7 @@ export default function DeFAISentinelHero() {
               </div>
             </div>
 
-            {/* Right 1: Approval Workflow (Y: 75) */}
+            {/* Right 1: Approval Workflow (Y: 75px) */}
             <div className="absolute left-[72.5%] top-[75px] -translate-y-1/2 z-20">
               <div className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full border border-black/10 dark:border-white/15 bg-white dark:bg-[#121413] shadow-[0_4px_16px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all hover:scale-105 duration-200">
                 <CheckCircleIcon />
@@ -368,8 +508,8 @@ export default function DeFAISentinelHero() {
               </div>
             </div>
 
-            {/* Right 2: Audit Trail (Y: 220) */}
-            <div className="absolute left-[72.5%] top-[220px] -translate-y-1/2 z-20">
+            {/* Right 2: Audit Trail (Y: 208px) */}
+            <div className="absolute left-[72.5%] top-[208px] -translate-y-1/2 z-20">
               <div className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full border border-black/10 dark:border-white/15 bg-white dark:bg-[#121413] shadow-[0_4px_16px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all hover:scale-105 duration-200">
                 <FileTextIcon />
                 <span className="text-xs sm:text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
@@ -378,8 +518,8 @@ export default function DeFAISentinelHero() {
               </div>
             </div>
 
-            {/* Right 3: Transaction Monitoring (Y: 355) */}
-            <div className="absolute left-[72.5%] top-[355px] -translate-y-1/2 z-20">
+            {/* Right 3: Transaction Monitoring (Y: 345px) */}
+            <div className="absolute left-[72.5%] top-[345px] -translate-y-1/2 z-20">
               <div className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full border border-black/10 dark:border-white/15 bg-white dark:bg-[#121413] shadow-[0_4px_16px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all hover:scale-105 duration-200">
                 <ActivityIcon />
                 <span className="text-xs sm:text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
@@ -410,14 +550,24 @@ export default function DeFAISentinelHero() {
               </div>
             </div>
 
-            {/* Central Database Float */}
-            <motion.div
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-              className="my-1"
-            >
-              <CentralDatabaseIllustration className="scale-95" />
-            </motion.div>
+            {/* Mobile Central Database Vector */}
+            <div className="w-[280px] aspect-[400/360] my-1">
+              <svg viewBox="350 100 300 310" className="w-full h-full overflow-visible" fill="none">
+                <ellipse cx="500" cy="372" rx="140" ry="22" fill="rgba(34, 197, 94, 0.28)" filter="blur(16px)" />
+                <path d="M 370 336 L 500 378 L 500 398 L 370 356 Z" fill="url(#platLeftGrad)" />
+                <path d="M 500 378 L 630 336 L 630 356 L 500 398 Z" fill="url(#platRightGrad)" />
+                <path d="M 500 294 L 630 336 L 500 378 L 370 336 Z" fill="url(#platTopGrad)" stroke="rgba(255,255,255,0.6)" strokeWidth="1.2" />
+                
+                {/* Tiers */}
+                <path d="M 432 234 L 500 256 L 500 286 L 432 264 Z" fill="url(#srvLeftGrad)" />
+                <path d="M 500 256 L 568 234 L 568 264 L 500 286 Z" fill="url(#srvRightGrad)" />
+                <path d="M 432 182 L 500 204 L 500 234 L 432 212 Z" fill="url(#srvLeftGrad)" />
+                <path d="M 500 204 L 568 182 L 568 212 L 500 234 Z" fill="url(#srvRightGrad)" />
+                <path d="M 432 130 L 500 152 L 500 182 L 432 160 Z" fill="url(#srvLeftGrad)" />
+                <path d="M 500 152 L 568 130 L 568 160 L 500 182 Z" fill="url(#srvRightGrad)" />
+                <path d="M 496 109 C 498 108, 502 108, 504 109 L 566 129 C 568 130, 568 132, 566 133 L 504 153 C 502 154, 498 154, 496 153 L 434 133 C 432 132, 432 130, 434 129 Z" fill="url(#srvLidGrad)" stroke="rgba(255,255,255,0.9)" strokeWidth="1.2" />
+              </svg>
+            </div>
 
             {/* Bottom 3 mobile tags */}
             <div className="flex flex-wrap justify-center gap-2.5">
