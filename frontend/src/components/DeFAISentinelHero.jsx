@@ -89,11 +89,11 @@ export default function DeFAISentinelHero() {
       </div>
 
       {/* ============================================================== */}
-      {/* 2. TWO-COLUMN FULL-SCREEN HERO COMPOSITION                     */}
-      {/* Left: Hero Content | Right: Enlarged Complete Illustration      */}
+      {/* 2. TWO-COLUMN HERO COMPOSITION MATCHING MISSION CONTAINER      */}
+      {/* Container: mx-auto w-full max-w-7xl px-6 lg:px-8               */}
       {/* ============================================================== */}
-      <div className="relative z-10 mx-auto w-full max-w-[1560px] 2xl:max-w-[1680px] px-6 sm:px-10 lg:px-12 xl:px-16 flex-1 flex flex-col justify-center">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.08fr_1.12fr] xl:grid-cols-[1.06fr_1.14fr] gap-8 lg:gap-10 xl:gap-14 items-center w-full my-auto">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-8 flex-1 flex flex-col justify-center">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1.15fr] gap-8 lg:gap-10 xl:gap-12 items-center w-full my-auto">
           
           {/* ----------------- LEFT COLUMN: HERO CONTENT ----------------- */}
           <div className="flex flex-col items-start text-left w-full">
@@ -103,24 +103,24 @@ export default function DeFAISentinelHero() {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="inline-flex items-center justify-center px-4 sm:px-5 py-2 mb-5 sm:mb-6 rounded-full border border-black/15 dark:border-white/15 bg-white/70 dark:bg-white/5 backdrop-blur-md shadow-sm"
+              className="inline-flex items-center justify-center px-4 py-1.5 mb-5 sm:mb-6 rounded-full border border-black/15 dark:border-white/15 bg-white/70 dark:bg-white/5 backdrop-blur-md shadow-sm"
             >
-              <span className="font-sans text-xs sm:text-sm font-medium tracking-tight text-zinc-800 dark:text-zinc-200">
+              <span className="font-sans text-xs sm:text-[13px] font-medium tracking-tight text-zinc-800 dark:text-zinc-200">
                 Introducing Autonomous Financial Agent
               </span>
             </motion.div>
 
-            {/* Main Heading: Prominent Left-aligned Bricolage Grotesque bold display */}
+            {/* Main Heading: Left-aligned Bricolage Grotesque bold display */}
             <motion.h1
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
               style={{ 
                 fontFamily: "'Bricolage Grotesque', sans-serif",
-                letterSpacing: "-3px",
-                lineHeight: "0.96"
+                letterSpacing: "-2.5px",
+                lineHeight: "0.98"
               }}
-              className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[66px] xl:text-[80px] 2xl:text-[92px] font-bold text-paper mb-6 text-left"
+              className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-[50px] xl:text-[58px] 2xl:text-[64px] font-bold text-paper mb-5 sm:mb-6 text-left"
             >
               <span className="block text-zinc-950 dark:text-white">
                 Secure autonomous
@@ -135,7 +135,7 @@ export default function DeFAISentinelHero() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-              className="text-sm sm:text-base md:text-lg lg:text-[17px] xl:text-[18px] font-sans font-normal leading-relaxed text-zinc-700 dark:text-zinc-300 max-w-xl xl:max-w-2xl mb-8 sm:mb-9 text-left"
+              className="text-xs sm:text-sm md:text-base lg:text-[15.5px] font-sans font-normal leading-relaxed text-zinc-700 dark:text-zinc-300 max-w-xl mb-7 sm:mb-8 text-left"
             >
               We build the secure, autonomous AI agents that handle financial tasks with deterministic policy enforcement.
               Every transaction is evaluated in real-time. Trust is no longer assumed, it is mathematically verified.
@@ -146,12 +146,12 @@ export default function DeFAISentinelHero() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-              className="flex items-center gap-3.5 sm:gap-4 justify-start"
+              className="flex items-center gap-3 sm:gap-4 justify-start"
             >
               {/* "See more" Button */}
               <Link
                 to="/services"
-                className="inline-flex items-center justify-center px-7 sm:px-8 h-12 sm:h-12.5 rounded-full text-xs sm:text-sm font-semibold tracking-tight border border-black/15 dark:border-white/20 bg-white/80 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 text-zinc-900 dark:text-white transition-all duration-200 shadow-sm"
+                className="inline-flex items-center justify-center px-6 sm:px-7 h-11 rounded-full text-xs sm:text-sm font-semibold tracking-tight border border-black/15 dark:border-white/20 bg-white/80 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 text-zinc-900 dark:text-white transition-all duration-200 shadow-sm"
               >
                 See more
               </Link>
@@ -159,7 +159,7 @@ export default function DeFAISentinelHero() {
               {/* "Chat ↗" Button */}
               <Link
                 to="/chat"
-                className="group inline-flex items-center justify-center gap-2 px-8 sm:px-9 h-12 sm:h-12.5 rounded-full text-xs sm:text-sm font-bold tracking-tight bg-[#84cc16] text-zinc-950 hover:bg-[#76b813] transition-all duration-200 shadow-md shadow-[#84cc16]/25 hover:scale-[1.02] active:scale-[0.98]"
+                className="group inline-flex items-center justify-center gap-1.5 px-7 sm:px-8 h-11 rounded-full text-xs sm:text-sm font-bold tracking-tight bg-[#84cc16] text-zinc-950 hover:bg-[#76b813] transition-all duration-200 shadow-md shadow-[#84cc16]/25 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span>Chat</span>
                 <span className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">↗</span>
