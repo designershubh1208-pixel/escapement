@@ -107,19 +107,23 @@ export default function DeFAISentinelHero() {
 
         {/* Main Heading: */}
         {/* "SECURE AUTONOMOUS" */}
-        {/* Main Heading: Bricolage Grotesque 700 exactly as specified in Figma Typography */}
+        {/* Main Heading: Exact specs from inspector: Bricolage Grotesque, Bold (700), 72px, Line Height 1.00, Lettering -1.8px */}
         <motion.h1
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-          style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}
-          className="text-4xl sm:text-6xl md:text-7xl lg:text-[84px] xl:text-[94px] font-bold uppercase tracking-tight leading-[1.0] text-paper mb-4 sm:mb-5"
+          style={{ 
+            fontFamily: "'Bricolage Grotesque', sans-serif",
+            letterSpacing: "-1.8px",
+            lineHeight: "1.00"
+          }}
+          className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-[72px] font-bold text-paper mb-4 sm:mb-5"
         >
-          <span className="block text-zinc-950 dark:text-white" style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}>
-            SECURE AUTONOMOUS
+          <span className="block text-zinc-950 dark:text-white">
+            Secure autonomous
           </span>
-          <span className="block text-[#84cc16]" style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}>
-            FINANCIAL AGENT
+          <span className="block text-[#84cc16]">
+            financial agent
           </span>
         </motion.h1>
 
