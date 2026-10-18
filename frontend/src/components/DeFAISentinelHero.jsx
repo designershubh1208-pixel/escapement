@@ -107,17 +107,17 @@ export default function DeFAISentinelHero() {
 
         {/* Main Heading: */}
         {/* "SECURE AUTONOMOUS" */}
-        {/* Main Heading: Exact specs from inspector: Bricolage Grotesque, Bold (700), 72px, Line Height 1.00, Lettering -1.8px */}
+        {/* Main Heading: Bricolage Grotesque scaled up to bold hero proportions */}
         <motion.h1
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
           style={{ 
             fontFamily: "'Bricolage Grotesque', sans-serif",
-            letterSpacing: "-1.8px",
-            lineHeight: "1.00"
+            letterSpacing: "-2.5px",
+            lineHeight: "0.95"
           }}
-          className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-[72px] font-bold text-paper mb-4 sm:mb-5"
+          className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-[92px] xl:text-[100px] font-bold text-paper mb-5 sm:mb-6"
         >
           <span className="block text-zinc-950 dark:text-white">
             Secure autonomous
