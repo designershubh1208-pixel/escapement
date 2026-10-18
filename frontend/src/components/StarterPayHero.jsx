@@ -42,80 +42,21 @@ export default function StarterPayHero() {
     <section className="relative w-full min-h-screen bg-ink flex flex-col justify-between overflow-hidden">
       
       {/* ============================================================== */}
-      {/* TOP ART BACKGROUND: Emerald/Lime Green 3D Fluid Flow (Living & Animated) */}
+      {/* TOP ART BACKGROUND: Emerald/Lime Green 3D Fluid Flow */}
       {/* ============================================================== */}
       <div className="relative w-full h-[52vh] sm:h-[58vh] md:h-[62vh] min-h-[380px] overflow-hidden select-none">
-        {/* Animated Fluid Canvas - Organic Breathing & Drifting Waves */}
-        <motion.div
-          animate={{
-            scale: [1.02, 1.06, 1.03, 1.05, 1.02],
-            x: [0, 14, -10, 8, 0],
-            y: [0, -8, 6, -4, 0],
-            rotate: [0, 0.6, -0.4, 0.3, 0]
-          }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="w-full h-full will-change-transform"
-        >
-          <img 
-            src="/hero-wave-lime.jpg" 
-            alt="DeFAI Sentinel Neural Flow" 
-            className="w-full h-full object-cover object-center"
-          />
-        </motion.div>
-
-        {/* Ambient Pulsing Emerald/Lime Bioluminescent Glows */}
-        <motion.div 
-          animate={{
-            opacity: [0.35, 0.7, 0.4, 0.65, 0.35],
-            scale: [1, 1.25, 0.95, 1.15, 1]
-          }}
-          transition={{
-            duration: 7,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute left-1/4 top-1/6 w-[45vw] h-[35vh] rounded-full bg-lime/20 blur-[110px] pointer-events-none" 
-        />
-        
-        <motion.div 
-          animate={{
-            opacity: [0.2, 0.55, 0.25, 0.6, 0.2],
-            scale: [0.9, 1.2, 1, 1.15, 0.9],
-            x: [0, 30, -20, 0]
-          }}
-          transition={{
-            duration: 9,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute right-1/4 top-1/3 w-[35vw] h-[28vh] rounded-full bg-emerald-400/20 blur-[120px] pointer-events-none" 
+        {/* Full Edge-to-Edge Emerald & Lime Green 3D Wave */}
+        <img 
+          src="/hero-wave-lime.jpg" 
+          alt="DeFAI Sentinel Neural Flow" 
+          className="w-full h-full object-cover object-center scale-[1.02]"
         />
 
-        {/* Dynamic Sweeping Light Beam / Caustic Wave Sheen */}
-        <motion.div
-          animate={{
-            x: ['-100%', '200%'],
-            opacity: [0, 0.5, 0.8, 0.3, 0]
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            repeatDelay: 3,
-            ease: "easeInOut"
-          }}
-          className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-lime/25 to-transparent skew-x-[-25deg] blur-2xl pointer-events-none"
-        />
+        {/* Crisp horizontal refraction beam across the top header zone */}
+        <div className="absolute top-[88px] inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-lime/40 to-transparent pointer-events-none" />
 
-        {/* Crisp horizontal refraction beam across the top header zone with subtle shimmer */}
-        <motion.div 
-          animate={{ opacity: [0.4, 0.85, 0.5, 0.9, 0.4] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[88px] inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-lime/50 to-transparent pointer-events-none" 
-        />
+        {/* Ambient green glow accent */}
+        <div className="absolute left-1/3 top-1/4 w-[40vw] h-[30vh] rounded-full bg-lime/10 blur-[100px] pointer-events-none" />
 
         {/* Seamless bottom fade into body canvas */}
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent pointer-events-none" />

@@ -4,10 +4,13 @@ import React from 'react';
  * Isometric Database / Server Stack on Hexagonal-Diamond Mint-Green Platform
  * Pure vector SVG component with layered 3-tier servers, status LED dots,
  * geometric mint-green base platform, drop shadow, and ambient lighting.
+ * ViewBox: 400 x 360, Center at X=200.
+ * Server tier left edges: X=128 (Y=140, 195, 250)
+ * Server tier right edges: X=272 (Y=140, 195, 250)
  */
 export default function CentralDatabaseIllustration({ className = "" }) {
   return (
-    <div className={`relative w-[280px] sm:w-[320px] md:w-[360px] lg:w-[400px] aspect-[400/360] mx-auto select-none ${className}`}>
+    <div className={`relative w-[300px] sm:w-[340px] md:w-[380px] lg:w-[420px] aspect-[400/360] mx-auto select-none ${className}`}>
       <svg
         viewBox="0 0 400 360"
         fill="none"
@@ -68,8 +71,8 @@ export default function CentralDatabaseIllustration({ className = "" }) {
 
         {/* ======================================================== */}
         {/* GEOMETRIC BASE PLATFORM (Mint-Green to Vivid Emerald) */}
-        {/* Diamond isometric slab: Left point (60, 290), Center-Top (200, 245), Right point (340, 290), Center-Front (200, 335) */}
-        {/* Platform Height = 25px */}
+        {/* Diamond isometric slab: Left (60, 286), Center-Top (200, 242), Right (340, 286), Center-Front (200, 331) */}
+        {/* Platform Height = 23px */}
         {/* ======================================================== */}
 
         {/* Platform Left Vertical Face */}
@@ -114,7 +117,6 @@ export default function CentralDatabaseIllustration({ className = "" }) {
         {/* CENTRAL THREE-TIER DATABASE / SERVER STACK */}
         {/* Center column width = 144px (X: 128 to 272), Center X = 200 */}
         {/* Left corner (128, Y), Center corner (200, Y+24), Right corner (272, Y) */}
-        {/* Top Lid Y = 135 */}
         {/* ======================================================== */}
 
         {/* ----------------- TIER 3 (BOTTOM LAYER) ----------------- */}
@@ -133,10 +135,8 @@ export default function CentralDatabaseIllustration({ className = "" }) {
           strokeWidth="0.5"
         />
         {/* Bottom Tier Status Indicators on Right Face */}
-        {/* LED dot */}
         <circle cx="218" cy="287" r="3" fill="#E2E8F0" />
         <circle cx="218" cy="287" r="1.5" fill="#38BDF8" />
-        {/* Horizontal slot marks */}
         <line x1="232" y1="281" x2="256" y2="273" stroke="#CBD5E1" strokeWidth="2.5" strokeLinecap="round" />
         <line x1="232" y1="288" x2="250" y2="282" stroke="#CBD5E1" strokeWidth="2.5" strokeLinecap="round" />
 
@@ -191,7 +191,6 @@ export default function CentralDatabaseIllustration({ className = "" }) {
         <line x1="232" y1="178" x2="250" y2="172" stroke="#CBD5E1" strokeWidth="2.5" strokeLinecap="round" />
 
         {/* ----------------- SERVER TOP ROOF LID ----------------- */}
-        {/* Rounded Diamond Top Cap: (200, 116), (272, 140), (200, 164), (128, 140) */}
         <path
           d="M196 117 C 198 116, 202 116, 204 117 L 270 139 C 272 140, 272 142, 270 143 L 204 165 C 202 166, 198 166, 196 165 L 130 143 C 128 142, 128 140, 130 139 Z"
           fill="url(#serverLidGrad)"
@@ -202,16 +201,16 @@ export default function CentralDatabaseIllustration({ className = "" }) {
         {/* Central Spine Bevel Highlight */}
         <line x1="200" y1="164" x2="200" y2="304" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
 
-        {/* Small Connector Junction Points (Subtle Nodes on Sides) */}
-        {/* Left Side Connection Junctions */}
-        <circle cx="128" cy="155" r="2.5" fill="#94A3B8" />
-        <circle cx="128" cy="210" r="2.5" fill="#94A3B8" />
-        <circle cx="128" cy="265" r="2.5" fill="#94A3B8" />
+        {/* Subtle Connector Landing Nodes at Tier Seams */}
+        {/* Left Side Connection Junctions (Y = 160, 215, 270) */}
+        <circle cx="128" cy="160" r="3" fill="#94A3B8" />
+        <circle cx="128" cy="215" r="3" fill="#94A3B8" />
+        <circle cx="128" cy="270" r="3" fill="#94A3B8" />
 
-        {/* Right Side Connection Junctions */}
-        <circle cx="272" cy="155" r="2.5" fill="#64748B" />
-        <circle cx="272" cy="210" r="2.5" fill="#64748B" />
-        <circle cx="272" cy="265" r="2.5" fill="#64748B" />
+        {/* Right Side Connection Junctions (Y = 160, 215, 270) */}
+        <circle cx="272" cy="160" r="3" fill="#64748B" />
+        <circle cx="272" cy="215" r="3" fill="#64748B" />
+        <circle cx="272" cy="270" r="3" fill="#64748B" />
       </svg>
     </div>
   );
