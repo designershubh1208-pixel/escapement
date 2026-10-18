@@ -107,13 +107,12 @@ export default function DeFAISentinelHero() {
 
         {/* Main Heading: */}
         {/* "SECURE AUTONOMOUS" */}
-        {/* "FINANCIAL AGENT" */}
-        {/* Main Heading: Hanken Grotesk font as specified */}
+        {/* Main Heading: Matching font style from 2nd image (Bricolage Grotesque font-display) */}
         <motion.h1
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-          className="font-sans text-4xl sm:text-6xl md:text-7xl lg:text-[84px] xl:text-[94px] font-extrabold uppercase tracking-[-0.035em] leading-[0.93] text-paper mb-4 sm:mb-5"
+          className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-[84px] xl:text-[94px] font-bold uppercase tracking-tight leading-[1.0] text-paper mb-4 sm:mb-5"
         >
           <span className="block text-zinc-950 dark:text-white">
             SECURE AUTONOMOUS
