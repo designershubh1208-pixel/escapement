@@ -93,7 +93,7 @@ export default function DeFAISentinelHero() {
       {/* Left: Hero Content | Right: Enlarged Complete Illustration      */}
       {/* ============================================================== */}
       <div className="relative z-10 mx-auto w-full max-w-[1560px] 2xl:max-w-[1680px] px-6 sm:px-10 lg:px-12 xl:px-16 flex-1 flex flex-col justify-center">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1.15fr] xl:grid-cols-[1fr_1.12fr] gap-8 lg:gap-10 xl:gap-14 items-center w-full my-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.08fr_1.12fr] xl:grid-cols-[1.06fr_1.14fr] gap-8 lg:gap-10 xl:gap-14 items-center w-full my-auto">
           
           {/* ----------------- LEFT COLUMN: HERO CONTENT ----------------- */}
           <div className="flex flex-col items-start text-left w-full">
@@ -117,10 +117,10 @@ export default function DeFAISentinelHero() {
               transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
               style={{ 
                 fontFamily: "'Bricolage Grotesque', sans-serif",
-                letterSpacing: "-2.5px",
-                lineHeight: "1.00"
+                letterSpacing: "-3px",
+                lineHeight: "0.96"
               }}
-              className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-[54px] xl:text-[66px] 2xl:text-[76px] font-bold text-paper mb-6 text-left"
+              className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[66px] xl:text-[80px] 2xl:text-[92px] font-bold text-paper mb-6 text-left"
             >
               <span className="block text-zinc-950 dark:text-white">
                 Secure autonomous
