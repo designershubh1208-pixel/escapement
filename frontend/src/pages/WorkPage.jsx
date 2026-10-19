@@ -68,12 +68,12 @@ const WorkPage = () => {
         </div>
       </section>
       
-      <section className="py-32 bg-lime text-ink text-center px-6">
-        <p className="font-mono text-xs font-bold tracking-widest uppercase mb-8">( Let's Build )</p>
+      <section className="py-32 bg-lime text-white text-center px-6">
+        <p className="font-mono text-xs font-bold tracking-widest uppercase mb-8 text-white/80">( Let's Build )</p>
         <h2 className="font-display text-5xl sm:text-7xl font-bold leading-[0.9] tracking-tighter mb-12">
           Ready to automate<br/>your financial ops?
         </h2>
-        <button className="inline-flex items-center justify-center rounded-full font-bold bg-ink text-lime hover:bg-ink/90 transition-colors h-14 px-8 text-sm">
+        <button className="inline-flex items-center justify-center rounded-full font-bold bg-white text-lime hover:bg-white/90 transition-colors h-14 px-8 text-sm shadow-xl cursor-pointer">
           Start a project ↗
         </button>
       </section>

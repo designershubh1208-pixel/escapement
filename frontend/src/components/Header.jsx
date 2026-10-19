@@ -48,7 +48,7 @@ const Header = () => {
                   }`}
                   title="View Profile Details"
                 >
-                  <div className="w-5 h-5 rounded-full bg-lime text-ink flex items-center justify-center font-bold text-[10px] group-hover:scale-105 transition-transform">
+                  <div className="w-5 h-5 rounded-full bg-lime text-white flex items-center justify-center font-bold text-[10px] group-hover:scale-105 transition-transform shadow-sm">
                     {user?.name ? user.name[0].toUpperCase() : 'U'}
                   </div>
                   <span className="max-w-[120px] truncate">{user?.name || user?.phone_number || 'Dashboard'}</span>
@@ -79,7 +79,7 @@ const Header = () => {
               </Link>
               <Link 
                 to="/register" 
-                className="group inline-flex items-center justify-center gap-2 rounded-full font-bold tracking-tight transition-all duration-300 bg-lime text-ink hover:brightness-95 h-10 px-5 text-sm shadow-sm"
+                className="group inline-flex items-center justify-center gap-2 rounded-full font-bold tracking-tight transition-all duration-300 bg-lime hover:bg-[#0052cc] text-white h-10 px-5 text-sm shadow-[0_0_18px_rgba(0,102,255,0.35)] hover:shadow-[0_0_28px_rgba(0,102,255,0.55)] cursor-pointer"
               >
                 Get Started <span className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">↗</span>
               </Link>

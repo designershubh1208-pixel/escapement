@@ -314,7 +314,7 @@ const SidebarLayout = () => {
               className={({ isActive }) => 
                 `flex items-center gap-2.5 px-4 py-3 rounded-xl font-bold transition-all shadow-sm text-sm ${
                   isActive 
-                    ? 'bg-lime text-ink shadow-lime/20' 
+                    ? 'bg-lime text-white shadow-lg shadow-blue-600/25' 
                     : 'bg-white/5 hover:bg-white/10 text-paper border border-white/10'
                 }` 
               }
@@ -328,7 +328,7 @@ const SidebarLayout = () => {
               className={({ isActive }) => 
                 `flex items-center gap-2.5 px-4 py-3 rounded-xl font-bold transition-all shadow-sm text-sm ${
                   isActive 
-                    ? 'bg-lime text-ink shadow-lime/20' 
+                    ? 'bg-lime text-white shadow-lg shadow-blue-600/25' 
                     : 'bg-white/5 hover:bg-white/10 text-paper border border-white/10'
                 }` 
               }
@@ -342,7 +342,7 @@ const SidebarLayout = () => {
               className={({ isActive }) => 
                 `flex items-center gap-2.5 px-4 py-3 rounded-xl font-bold transition-all shadow-sm text-sm ${
                   isActive 
-                    ? 'bg-lime text-ink shadow-lime/20' 
+                    ? 'bg-lime text-white shadow-lg shadow-blue-600/25' 
                     : 'bg-white/5 hover:bg-white/10 text-paper border border-white/10'
                 }` 
               }
@@ -356,7 +356,7 @@ const SidebarLayout = () => {
               className={({ isActive }) => 
                 `flex items-center gap-2.5 px-4 py-3 rounded-xl font-bold transition-all shadow-sm text-sm ${
                   isActive 
-                    ? 'bg-white/20 text-paper border border-white/30' 
+                    ? 'bg-lime/15 text-lime border border-lime/30 font-bold' 
                     : 'bg-white/5 hover:bg-white/10 text-paper border border-white/10'
                 }` 
               }

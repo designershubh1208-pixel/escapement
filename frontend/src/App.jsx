@@ -35,7 +35,7 @@ function AppContent({ isLoading }) {
       
       {!isLoading && (
         <div className="App">
-          {!isAuthPage && !isDashboard && <Header />}
+          {!isAuthPage && !isDashboard && location.pathname !== '/' && <Header />}
           <main>
             <Routes>
               <Route path="/" element={<LandingPage />} />
@@ -65,7 +65,7 @@ function AppContent({ isLoading }) {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
-          {!isDashboard && !isAuthPage && <Footer />}
+          {!isDashboard && !isAuthPage && location.pathname !== '/' && <Footer />}
         </div>
       )}
     </>

@@ -59,11 +59,11 @@ const OAuthCallbackPage = () => {
   }, [location, navigate]);
 
   return (
-    <div className="min-h-screen bg-[#070907] text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-3xl p-8 bg-[#121613] border border-white/10 text-center space-y-4 shadow-2xl">
+    <div className="min-h-screen bg-[#070908] text-white flex items-center justify-center p-4">
+      <div className="w-full max-w-md rounded-3xl p-8 bg-[#0b0f19] border border-white/10 text-center space-y-4 shadow-2xl">
         {status === 'processing' && (
           <>
-            <RefreshCw className="w-10 h-10 text-[#22c55e] animate-spin mx-auto" />
+            <RefreshCw className="w-10 h-10 text-[#0066ff] animate-spin mx-auto" />
             <h2 className="text-xl font-bold font-display">Authenticating with Provider...</h2>
             <p className="text-xs text-white/60">Fetching verified profile and launching your session.</p>
           </>
@@ -71,9 +71,9 @@ const OAuthCallbackPage = () => {
 
         {status === 'success' && (
           <>
-            <CheckCircle2 className="w-10 h-10 text-[#22c55e] mx-auto" />
-            <h2 className="text-xl font-bold font-display text-[#22c55e]">Authentication Verified!</h2>
-            <p className="text-xs text-white/60">Entering your DeFAI Sentinel dashboard...</p>
+            <CheckCircle2 className="w-10 h-10 text-[#0066ff] mx-auto" />
+            <h2 className="text-xl font-bold font-display text-[#0066ff]">Authentication Verified!</h2>
+            <p className="text-xs text-white/60">Entering your Escapement dashboard...</p>
           </>
         )}
 

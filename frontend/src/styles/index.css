@@ -3,21 +3,125 @@
 @tailwind utilities;
 
 :root {
-  /* Light Theme (matches user screenshot exactly) */
+  /* Light Theme */
   --color-ink: 248 249 246;     /* #f8f9f6 off-white canvas */
   --color-paper: 10 11 10;      /* #0a0b0a deep black typography */
   --color-surface: 255 255 255; /* pure white cards */
   --color-border: 0 0 0;        /* subtle dark borders */
   --grid-line: rgba(0, 0, 0, 0.045);
+  --color-mint: #0066ff;
 }
 
 .dark {
-  /* Dark Theme */
-  --color-ink: 10 11 10;        /* #0a0b0a dark canvas */
-  --color-paper: 243 244 246;   /* #f3f4f6 paper text */
-  --color-surface: 18 20 18;
+  /* Dark Theme - Nexaris Obsidian Canvas */
+  --color-ink: 7 9 8;           /* #070908 deep dark canvas */
+  --color-paper: 243 244 246;   /* #f3f4f6 crisp paper text */
+  --color-surface: 14 18 16;    /* #0e1210 dark surface */
   --color-border: 255 255 255;
   --grid-line: rgba(255, 255, 255, 0.03);
+  --color-mint: #0066ff;
+}
+
+::selection {
+  background-color: #0defd1;
+  color: #010320;
+}
+
+/* BG Noise Overlay matching Nexaris exact [data-noise] on blue cards */
+[data-noise] {
+  position: relative;
+}
+
+[data-noise]::before {
+  content: '';
+  position: absolute;
+  inset: 0%;
+  width: 100%;
+  height: 100%;
+  background-image: url('/nexaris/noise.gif');
+  background-position: 50%;
+  background-repeat: repeat;
+  background-size: auto;
+  opacity: 0.035; /* Calm, ultra-subtle texture to eliminate eye strain/headache */
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Glitching Noise Animation - masked strictly to blue ambient glow at top */
+.hero-bg-noise {
+  position: absolute;
+  inset: 0%;
+  width: 100%;
+  height: 100%;
+  background-image: url('/nexaris/noise.gif');
+  background-position: 50%;
+  background-repeat: repeat;
+  background-size: auto;
+  opacity: 0.04; /* Soft, elegant, non-fatiguing */
+  pointer-events: none;
+  z-index: 1;
+  -webkit-mask-image: radial-gradient(ellipse 65% 45% at 70% 0%, #000 0%, #000 25%, transparent 65%);
+  mask-image: radial-gradient(ellipse 65% 45% at 70% 0%, #000 0%, #000 25%, transparent 65%);
+}
+
+/* Ensure glassmorphism inside royal blue sections is never overridden to solid white */
+[data-noise] .bg-white\/5,
+[data-noise] .bg-white\/10,
+[data-noise] .bg-white\/15,
+[data-noise] .bg-white\/20,
+footer .bg-white\/5,
+footer .bg-white\/10,
+footer .bg-white\/15,
+footer .bg-white\/20 {
+  background-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: none !important;
+}
+
+[data-noise] .border-white\/10,
+[data-noise] .border-white\/15,
+[data-noise] .border-white\/20,
+[data-noise] .border-white\/30,
+footer .border-white\/10,
+footer .border-white\/15,
+footer .border-white\/20,
+footer .border-white\/30 {
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Nexaris Levitation Elements */
+[data-levitation="1"] {
+  animation: levitateFirst 6s ease-in-out infinite;
+}
+
+@keyframes levitateFirst {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-2%); }
+  100% { transform: translateY(0); }
+}
+
+[data-levitation="2"] {
+  animation: levitateSecond 5s ease-in-out infinite;
+}
+
+@keyframes levitateSecond {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-1%); }
+  100% { transform: translateY(0); }
+}
+
+/* Nexaris Ambient Blurred Ellipse */
+.hero-bg-ellipse {
+  will-change: filter;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  filter: blur(12rem);
+  -webkit-filter: blur(12rem);
+}
+
+.hero-bg-image.s1 {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 10% 90%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 10% 90%, transparent 100%);
 }
 
 @layer base {
@@ -100,8 +204,8 @@ html:not(.dark) .bg-ink\/80 {
 
 /* Light mode selection */
 html:not(.dark) ::selection {
-  background-color: rgba(132, 204, 22, 0.3);
-  color: #0a0b0a;
+  background-color: rgba(0, 102, 255, 0.22);
+  color: #010320;
 }
 
 /* Skeleton Loading Shimmer Effect */
@@ -207,4 +311,96 @@ html:not(.dark) .skeleton-bone {
     stroke-dashoffset: 0;
     opacity: 0.4;
   }
+}
+
+/* ========================================================================== */
+/* Escapement Royal Blue Theme Utility Overrides                              */
+/* Maps legacy lime/green accents to Escapement Royal Blue (#0066ff)         */
+/* ========================================================================== */
+.bg-lime {
+  background-color: #0066ff !important;
+}
+
+.text-lime {
+  color: #0066ff !important;
+}
+
+.border-lime {
+  border-color: #0066ff !important;
+}
+
+.fill-lime {
+  fill: #0066ff !important;
+}
+
+.bg-lime\/5 {
+  background-color: rgba(0, 102, 255, 0.05) !important;
+}
+
+.bg-lime\/10 {
+  background-color: rgba(0, 102, 255, 0.10) !important;
+}
+
+.bg-lime\/15 {
+  background-color: rgba(0, 102, 255, 0.15) !important;
+}
+
+.bg-lime\/20 {
+  background-color: rgba(0, 102, 255, 0.20) !important;
+}
+
+.border-lime\/20 {
+  border-color: rgba(0, 102, 255, 0.20) !important;
+}
+
+.border-lime\/30 {
+  border-color: rgba(0, 102, 255, 0.30) !important;
+}
+
+.border-lime\/40 {
+  border-color: rgba(0, 102, 255, 0.40) !important;
+}
+
+.text-lime\/70 {
+  color: rgba(0, 102, 255, 0.70) !important;
+}
+
+.text-lime\/80 {
+  color: rgba(0, 102, 255, 0.80) !important;
+}
+
+.hover\:text-lime:hover {
+  color: #0066ff !important;
+}
+
+.hover\:border-lime\/30:hover {
+  border-color: rgba(0, 102, 255, 0.30) !important;
+}
+
+.hover\:border-lime\/40:hover {
+  border-color: rgba(0, 102, 255, 0.40) !important;
+}
+
+.hover\:bg-lime\/10:hover {
+  background-color: rgba(0, 102, 255, 0.10) !important;
+}
+
+.hover\:bg-lime\/20:hover {
+  background-color: rgba(0, 102, 255, 0.20) !important;
+}
+
+.group:hover .group-hover\:text-lime {
+  color: #0066ff !important;
+}
+
+.focus\:border-lime:focus {
+  border-color: #0066ff !important;
+}
+
+.shadow-lime\/20 {
+  --tw-shadow-color: rgba(0, 102, 255, 0.25) !important;
+}
+
+.shadow-lime\/60 {
+  --tw-shadow-color: rgba(0, 102, 255, 0.60) !important;
 }

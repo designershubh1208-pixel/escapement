@@ -24,7 +24,7 @@ const Logo = ({ className = "h-[22px] w-auto" }) => {
         fontFamily="'Bricolage Grotesque', sans-serif"
         fontSize="85"
         fontWeight="800"
-        className="fill-lime"
+        className="fill-[#0066ff]"
       >
         ₹
       </text>

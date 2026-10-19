@@ -333,7 +333,7 @@ const SubscriptionTerminatorPage = () => {
           <button
             type="submit"
             disabled={quickLoading || !quickInput.trim()}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm bg-lime text-ink hover:brightness-95 transition-all disabled:opacity-50 flex-shrink-0 shadow-md active:scale-95"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm bg-lime text-white hover:bg-[#0052cc] transition-all disabled:opacity-50 flex-shrink-0 shadow-lg shadow-blue-600/25 active:scale-95 cursor-pointer"
           >
             <Scissors className="w-4 h-4" />
             <span>{quickLoading ? 'Terminating...' : 'Terminate Subscription'}</span>
@@ -359,7 +359,7 @@ const SubscriptionTerminatorPage = () => {
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-lime text-ink font-bold text-xs shadow-sm hover:brightness-105 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-lime text-white font-bold text-xs shadow-md shadow-blue-600/20 hover:bg-[#0052cc] transition-all cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Subscription</span>
@@ -370,9 +370,9 @@ const SubscriptionTerminatorPage = () => {
                 <button
                   key={tab}
                   onClick={() => setFilter(tab)}
-                  className={`px-3 py-1 rounded-lg text-xs font-mono transition-all ${
+                  className={`px-3 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer ${
                     filter === tab
-                      ? 'bg-lime text-ink font-bold shadow-sm'
+                      ? 'bg-lime text-white font-bold shadow-md shadow-blue-600/20'
                       : 'text-paper/60 hover:text-paper hover:bg-white/5'
                   }`}
                 >
@@ -423,7 +423,7 @@ const SubscriptionTerminatorPage = () => {
               </p>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-lime text-ink font-bold text-xs shadow-md hover:brightness-105 active:scale-95 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-lime text-white font-bold text-xs shadow-lg shadow-blue-600/25 hover:bg-[#0052cc] active:scale-95 transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Real Subscription</span>
@@ -746,7 +746,7 @@ const SubscriptionTerminatorPage = () => {
                 <button
                   type="submit"
                   disabled={isSubmittingNew || !newService.service_name.trim() || !newService.amount_rupees}
-                  className="px-6 py-2.5 rounded-xl text-xs font-bold bg-lime text-ink hover:brightness-105 disabled:opacity-50 transition-all shadow-md active:scale-95 cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl text-xs font-bold bg-lime text-white hover:bg-[#0052cc] disabled:opacity-50 transition-all shadow-lg shadow-blue-600/25 active:scale-95 cursor-pointer"
                 >
                   {isSubmittingNew ? 'Adding...' : 'Add to Monitoring'}
                 </button>

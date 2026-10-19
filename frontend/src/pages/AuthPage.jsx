@@ -203,8 +203,12 @@ const AuthPage = ({ defaultMode = 'login' }) => {
 
 
   return (
-    <div className="min-h-screen bg-[#f8f9f6] dark:bg-[#070907] text-[#0a0b0a] dark:text-white flex flex-col justify-between selection:bg-[#22c55e] selection:text-black relative transition-colors duration-300 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-[#f8f9f6] dark:bg-[#070908] text-[#0a0b0a] dark:text-white flex flex-col justify-between selection:bg-[#0066ff] selection:text-white relative overflow-hidden transition-colors duration-300 p-4 sm:p-6 lg:p-8">
       
+      {/* Ambient Radial Lighting in Canvas Corners */}
+      <div className="absolute top-1/4 left-1/4 w-[420px] h-[420px] bg-[#0066ff]/10 dark:bg-[#0066ff]/15 rounded-full blur-[130px] pointer-events-none z-0" />
+      <div className="absolute bottom-1/4 right-1/4 w-[420px] h-[420px] bg-[#0066ff]/10 dark:bg-[#0066ff]/15 rounded-full blur-[130px] pointer-events-none z-0" />
+
       {/* Top Header Controls */}
       <header className="w-full max-w-7xl mx-auto flex items-center justify-between py-2 px-2 z-20">
         <div className="flex items-center gap-2">
@@ -224,112 +228,36 @@ const AuthPage = ({ defaultMode = 'login' }) => {
         </div>
       </header>
 
-      {/* Main Container - Split View Matching Reference Image */}
+      {/* Main Container - Split View with Unique 3D Security Illustration */}
       <main className="w-full max-w-7xl mx-auto my-auto py-4 z-10 flex items-center justify-center">
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           
           {/* ======================================================== */}
-          {/* LEFT PANEL: VIBRANT EMERALD GRADIENT HERO CARD           */}
+          {/* LEFT PANEL: PURE 3D ISOLATED ILLUSTRATION (NO CARD / BOX) */}
           {/* ======================================================== */}
-          <div className="lg:col-span-6 w-full flex justify-center">
-            <div className="w-full max-w-[540px] rounded-[2.5rem] p-8 sm:p-12 relative overflow-hidden bg-gradient-to-b from-[#22c55e] via-[#0d4722] to-[#040f07] border border-black/10 dark:border-white/10 shadow-2xl shadow-emerald-950/30 dark:shadow-emerald-950/60 flex flex-col justify-between min-h-[580px] sm:min-h-[640px]">
-              
-              {/* Subtle Ambient Radial Lighting Overlay */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[340px] h-[220px] bg-emerald-400/30 rounded-full blur-[80px] pointer-events-none" />
+          <div className="lg:col-span-7 w-full flex items-center justify-center py-4 lg:pr-6 select-none relative">
+            {/* Subtle Ambient Radial Lighting Glow behind illustration */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[220px] bg-[#0066ff]/20 dark:bg-[#0066ff]/35 rounded-full blur-[100px] pointer-events-none" />
 
-              {/* Card Header Content */}
-              <div className="relative z-10 text-center space-y-3 pt-2">
-                {/* Brand Logo & Name */}
-                <div className="inline-flex items-center justify-center gap-2.5 mb-2">
-                  <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-lg">
-                    <Logo className="h-5 w-auto" />
-                  </div>
-                  <span className="font-display font-extrabold text-3xl tracking-tight text-white drop-shadow-sm">
-                    Escapement
-                  </span>
-                </div>
-
-                <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-                  {mode === 'login' ? 'Welcome back to us' : 'Get started with us'}
-                </h1>
-
-                <p className="text-white/80 text-xs sm:text-sm font-sans max-w-sm mx-auto">
-                  {mode === 'login' 
-                    ? 'Authenticate your authorized session to enter the autonomous console.' 
-                    : 'Complete these easy steps to register your account.'}
-                </p>
-              </div>
-
-              {/* Vertical Step Timeline Container */}
-              <div className="relative z-10 my-auto py-8 space-y-4">
-                
-                {/* Timeline Step 1 */}
-                <div className="relative pl-10 group">
-                  <div className="absolute left-[13px] top-7 bottom-[-22px] w-[2px] bg-white/20" />
-                  <div className="absolute left-0 top-3.5 w-7 h-7 rounded-full bg-[#1b5e34] border border-white/30 flex items-center justify-center text-xs shadow-md">
-                    <span className="w-2.5 h-2.5 rounded-full bg-white" />
-                  </div>
-                  <div className="rounded-2xl p-4 sm:p-4.5 bg-black/40 hover:bg-black/50 border border-white/10 backdrop-blur-md transition-all">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm">✏️</span>
-                      <h3 className="text-sm font-bold text-white tracking-tight">Sign up your account</h3>
-                    </div>
-                    <p className="text-xs text-white/60 leading-relaxed">
-                      Real mobile OTP verification and zero third-party lock-in.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Timeline Step 2 */}
-                <div className="relative pl-10 group">
-                  <div className="absolute left-[13px] top-7 bottom-[-22px] w-[2px] bg-white/20" />
-                  <div className="absolute left-0 top-3.5 w-7 h-7 rounded-full bg-[#124224] border border-white/20 flex items-center justify-center text-xs shadow-md">
-                    <span className="w-2.5 h-2.5 rounded-full bg-white/60" />
-                  </div>
-                  <div className="rounded-2xl p-4 sm:p-4.5 bg-black/40 hover:bg-black/50 border border-white/10 backdrop-blur-md transition-all">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm">🔍</span>
-                      <h3 className="text-sm font-bold text-white tracking-tight">Configure policy guardrails</h3>
-                    </div>
-                    <p className="text-xs text-white/60 leading-relaxed">
-                      Set automated spending limits with EVM deterministic authorization.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Timeline Step 3 */}
-                <div className="relative pl-10 group">
-                  <div className="absolute left-0 top-3.5 w-7 h-7 rounded-full bg-[#0a2615] border border-white/20 flex items-center justify-center text-xs shadow-md">
-                    <span className="w-2.5 h-2.5 rounded-full bg-white/40" />
-                  </div>
-                  <div className="rounded-2xl p-4 sm:p-4.5 bg-black/40 hover:bg-black/50 border border-white/10 backdrop-blur-md transition-all">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm">🎉</span>
-                      <h3 className="text-sm font-bold text-white tracking-tight">Start trading with Escapement</h3>
-                    </div>
-                    <p className="text-xs text-white/60 leading-relaxed">
-                      Deploy autonomous e-commerce purchasing & AI subscription tracking.
-                    </p>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Bottom Badge */}
-              <div className="relative z-10 pt-2 text-center">
-                <span className="text-[11px] font-mono text-white/50 tracking-wider">
-                  ENCRYPTED GUARANTEES • ZERO FIREBASE
-                </span>
-              </div>
-
-            </div>
+            {/* Pure Floating 3D Transparent Ribbon & Artifacts Illustration */}
+            <motion.div
+              animate={{ y: [0, -10, 0], rotate: [0, 0.5, 0] }}
+              transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+              className="relative w-full flex items-center justify-center filter drop-shadow-[0_20px_40px_rgba(0,102,255,0.25)] dark:drop-shadow-[0_25px_50px_rgba(0,102,255,0.45)]"
+            >
+              <img 
+                src="/auth-panoramic-transparent.png" 
+                alt="3D Financial Defense Illustration" 
+                className="w-full h-auto max-h-[540px] object-contain pointer-events-none"
+              />
+            </motion.div>
           </div>
 
 
           {/* ======================================================== */}
           {/* RIGHT PANEL: FORM MATCHING REFERENCE                     */}
           {/* ======================================================== */}
-          <div className="lg:col-span-6 w-full flex justify-center">
+          <div className="lg:col-span-5 w-full flex justify-center">
             <div className="w-full max-w-[460px] px-2 sm:px-6">
               
               {/* Heading */}
@@ -401,7 +329,7 @@ const AuthPage = ({ defaultMode = 'login' }) => {
                             setError('');
                             setOtpSent(false);
                           }}
-                          className="mt-1.5 text-xs font-bold underline text-[#22c55e] hover:brightness-110"
+                          className="mt-1.5 text-xs font-bold underline text-[#0066ff] hover:brightness-110"
                         >
                           Switch to Sign Up Now →
                         </button>
@@ -414,7 +342,7 @@ const AuthPage = ({ defaultMode = 'login' }) => {
                             setError('');
                             setOtpSent(false);
                           }}
-                          className="mt-1.5 text-xs font-bold underline text-[#22c55e] hover:brightness-110"
+                          className="mt-1.5 text-xs font-bold underline text-[#0066ff] hover:brightness-110"
                         >
                           Switch to Sign In Now →
                         </button>
@@ -427,7 +355,7 @@ const AuthPage = ({ defaultMode = 'login' }) => {
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="mb-4 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2.5"
+                    className="mb-4 p-3.5 rounded-xl bg-[#0066ff]/10 border border-[#0066ff]/25 text-[#0066ff] dark:text-blue-400 text-xs flex items-center gap-2.5"
                   >
                     <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
                     <span>{successMsg}</span>
@@ -454,7 +382,7 @@ const AuthPage = ({ defaultMode = 'login' }) => {
                           onChange={(e) => setName(e.target.value)}
                           placeholder="Sarah Jenkins"
                           required
-                          className="w-full bg-white dark:bg-[#121613] border border-black/10 dark:border-white/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-[#0a0b0a] dark:text-white placeholder:text-black/30 dark:placeholder:text-white/30 focus:border-[#22c55e] focus:outline-none focus:ring-1 focus:ring-[#22c55e]/30 transition-all shadow-sm"
+                          className="w-full bg-white dark:bg-[#121613] border border-black/10 dark:border-white/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-[#0a0b0a] dark:text-white placeholder:text-black/30 dark:placeholder:text-white/30 focus:border-[#0066ff] focus:outline-none focus:ring-1 focus:ring-[#0066ff]/30 transition-all shadow-sm"
                         />
                       </div>
                     </div>
@@ -472,7 +400,7 @@ const AuthPage = ({ defaultMode = 'login' }) => {
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="Sarahw12@mail.com"
                         required
-                        className="w-full bg-white dark:bg-[#121613] border border-black/10 dark:border-white/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-[#0a0b0a] dark:text-white placeholder:text-black/30 dark:placeholder:text-white/30 focus:border-[#22c55e] focus:outline-none focus:ring-1 focus:ring-[#22c55e]/30 transition-all shadow-sm"
+                        className="w-full bg-white dark:bg-[#121613] border border-black/10 dark:border-white/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-[#0a0b0a] dark:text-white placeholder:text-black/30 dark:placeholder:text-white/30 focus:border-[#0066ff] focus:outline-none focus:ring-1 focus:ring-[#0066ff]/30 transition-all shadow-sm"
                       />
                     </div>
                   </div>
@@ -489,7 +417,7 @@ const AuthPage = ({ defaultMode = 'login' }) => {
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••••••"
                         required
-                        className="w-full bg-white dark:bg-[#121613] border border-black/10 dark:border-white/10 rounded-2xl pl-11 pr-11 py-3.5 text-sm text-[#0a0b0a] dark:text-white placeholder:text-black/30 dark:placeholder:text-white/30 focus:border-[#22c55e] focus:outline-none focus:ring-1 focus:ring-[#22c55e]/30 transition-all shadow-sm"
+                        className="w-full bg-white dark:bg-[#121613] border border-black/10 dark:border-white/10 rounded-2xl pl-11 pr-11 py-3.5 text-sm text-[#0a0b0a] dark:text-white placeholder:text-black/30 dark:placeholder:text-white/30 focus:border-[#0066ff] focus:outline-none focus:ring-1 focus:ring-[#0066ff]/30 transition-all shadow-sm"
                       />
                       <button
                         type="button"
@@ -508,7 +436,7 @@ const AuthPage = ({ defaultMode = 'login' }) => {
                       onClick={() => setRememberMe(!rememberMe)}
                       className="flex items-center gap-2 text-[#0a0b0a]/70 dark:text-white/70 hover:text-[#0a0b0a] dark:hover:text-white cursor-pointer select-none"
                     >
-                      <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-colors ${rememberMe ? 'bg-[#22c55e] text-black' : 'border border-black/30 dark:border-white/30'}`}>
+                      <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-colors ${rememberMe ? 'bg-[#0066ff] text-white' : 'border border-black/30 dark:border-white/30'}`}>
                         {rememberMe && <Check className="w-3 h-3 stroke-[3]" />}
                       </div>
                       <span>Remember me</span>
@@ -528,7 +456,7 @@ const AuthPage = ({ defaultMode = 'login' }) => {
                   <button
                     type="submit"
                     disabled={loading || !email || !password}
-                    className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-[#22c55e] to-[#16a34a] hover:brightness-110 active:scale-[0.99] text-white font-bold text-sm transition-all shadow-xl shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed mt-3 cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-4 px-6 rounded-2xl bg-[#0066ff] hover:bg-[#0052cc] active:scale-[0.99] text-white font-bold text-sm transition-all shadow-xl shadow-blue-600/25 disabled:opacity-50 disabled:cursor-not-allowed mt-3 cursor-pointer flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <>
@@ -543,7 +471,7 @@ const AuthPage = ({ defaultMode = 'login' }) => {
               ) : (
                 /* Step 2: 6-Digit Email OTP Verification */
                 <form onSubmit={handleVerifyOtp} className="space-y-4">
-                  <div className="p-3.5 rounded-2xl bg-[#22c55e]/10 border border-[#22c55e]/20 text-xs">
+                  <div className="p-3.5 rounded-2xl bg-[#0066ff]/10 border border-[#0066ff]/20 text-xs">
                     <p className="text-[#0a0b0a]/70 dark:text-white/70">
                       We sent a 6-digit verification code to:
                     </p>
@@ -556,7 +484,7 @@ const AuthPage = ({ defaultMode = 'login' }) => {
                           setOtpDigits(['', '', '', '', '', '']);
                           setError('');
                         }}
-                        className="text-[#22c55e] hover:underline font-bold text-xs font-mono cursor-pointer"
+                        className="text-[#0066ff] hover:underline font-bold text-xs font-mono cursor-pointer"
                       >
                         Change
                       </button>
@@ -575,7 +503,7 @@ const AuthPage = ({ defaultMode = 'login' }) => {
                         value={digit}
                         onChange={(e) => handleDigitChange(idx, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(idx, e)}
-                        className="w-11 sm:w-12 h-14 text-center text-xl font-bold font-mono bg-white dark:bg-[#121613] border border-black/15 dark:border-white/15 focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] rounded-2xl text-[#0a0b0a] dark:text-white focus:outline-none transition-all shadow-sm"
+                        className="w-11 sm:w-12 h-14 text-center text-xl font-bold font-mono bg-white dark:bg-[#121613] border border-black/15 dark:border-white/15 focus:border-[#0066ff] focus:ring-1 focus:ring-[#0066ff] rounded-2xl text-[#0a0b0a] dark:text-white focus:outline-none transition-all shadow-sm"
                       />
                     ))}
                   </div>
@@ -590,7 +518,7 @@ const AuthPage = ({ defaultMode = 'login' }) => {
                         type="button"
                         onClick={handleSendOtp}
                         disabled={loading}
-                        className="text-[#22c55e] hover:underline font-bold cursor-pointer"
+                        className="text-[#0066ff] hover:underline font-bold cursor-pointer"
                       >
                         Resend Code
                       </button>
@@ -600,7 +528,7 @@ const AuthPage = ({ defaultMode = 'login' }) => {
                   <button
                     type="submit"
                     disabled={loading || otpDigits.join('').length !== 6}
-                    className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-[#22c55e] to-[#16a34a] hover:brightness-110 active:scale-[0.99] text-white font-bold text-sm transition-all shadow-xl shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed mt-3 cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-4 px-6 rounded-2xl bg-[#0066ff] hover:bg-[#0052cc] active:scale-[0.99] text-white font-bold text-sm transition-all shadow-xl shadow-blue-600/25 disabled:opacity-50 disabled:cursor-not-allowed mt-3 cursor-pointer flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <>

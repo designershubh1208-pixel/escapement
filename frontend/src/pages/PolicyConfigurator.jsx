@@ -167,7 +167,7 @@ const PolicyConfigurator = () => {
                     onClick={() => setPerTxLimit(amount)}
                     className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-lime text-ink shadow-md shadow-lime/20 scale-105'
+                        ? 'bg-lime text-white shadow-md shadow-blue-600/25 scale-105'
                         : 'bg-white/5 hover:bg-white/10 text-paper border border-white/10'
                     }`}
                   >
@@ -340,7 +340,7 @@ const PolicyConfigurator = () => {
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-lime text-ink font-bold text-sm shadow-lg hover:brightness-105 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-lime text-white font-bold text-sm shadow-xl shadow-blue-600/25 hover:bg-[#0052cc] active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? 'Updating Policies...' : 'Save & Enforce Limits'}</span>

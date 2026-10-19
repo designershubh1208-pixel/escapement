@@ -111,7 +111,7 @@ export default function StarterPayHero() {
 
               <Link
                 to="/chat"
-                className="group inline-flex items-center justify-center gap-2 px-7 sm:px-8 h-12 sm:h-14 rounded-full text-xs sm:text-sm font-bold tracking-tight bg-lime text-ink hover:brightness-105 transition-all duration-200 shadow-lg shadow-lime/20 hover:scale-[1.02] active:scale-[0.98]"
+                className="group inline-flex items-center justify-center gap-2 px-7 sm:px-8 h-12 sm:h-14 rounded-full text-xs sm:text-sm font-bold tracking-tight bg-lime text-white hover:bg-[#0052cc] transition-all duration-200 shadow-xl shadow-blue-600/25 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span>Chat</span>
                 <span className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">↗</span>

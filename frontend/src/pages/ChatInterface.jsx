@@ -397,7 +397,7 @@ const ChatInterface = () => {
               onClick={() => setStatusFilter(tab)}
               className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
                 statusFilter === tab
-                  ? 'bg-lime text-ink font-bold shadow-sm'
+                  ? 'bg-lime text-white font-bold shadow-md shadow-blue-600/20'
                   : 'text-paper/60 hover:text-paper hover:bg-white/5'
               }`}
             >
@@ -779,7 +779,7 @@ const ChatInterface = () => {
                   <button
                     onClick={() => handleDecision(selectedRequest.id, 'APPROVE')}
                     disabled={actionLoading}
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl font-bold bg-lime text-ink hover:brightness-105 active:scale-95 transition-all h-12 px-6 shadow-md disabled:opacity-50"
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl font-bold bg-lime text-white hover:bg-[#0052cc] active:scale-95 transition-all h-12 px-6 shadow-lg shadow-blue-600/25 disabled:opacity-50 cursor-pointer"
                   >
                     {actionLoading ? 'Processing on EVM...' : '✓ Authorize & Execute Payment'}
                   </button>

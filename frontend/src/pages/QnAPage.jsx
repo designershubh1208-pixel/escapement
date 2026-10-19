@@ -41,10 +41,10 @@ const FormattedChatMessage = ({ content, onBuyAction, actionLoading }) => {
               key={match.index}
               onClick={() => onBuyAction && onBuyAction({ merchant, price, query })}
               disabled={actionLoading}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-lime hover:brightness-105 active:scale-95 text-ink font-bold text-xs shadow-sm transition-all cursor-pointer disabled:opacity-50 flex-shrink-0"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-lime hover:bg-[#0052cc] active:scale-95 text-white font-bold text-xs shadow-sm transition-all cursor-pointer disabled:opacity-50 flex-shrink-0"
               title={`Let AI initiate purchase for ${query} on ${merchant}`}
             >
-              <Zap className="w-3.5 h-3.5 fill-ink" />
+              <Zap className="w-3.5 h-3.5 fill-white text-white" />
               <span>{label.replace('⚡ ', '')}</span>
             </button>
           );
@@ -387,7 +387,7 @@ const QnAPage = () => {
                       type="button"
                       onClick={() => handleSaveAndResend(idx, editingMsgContent)}
                       disabled={!editingMsgContent.trim() || loading}
-                      className="px-4 py-1.5 rounded-xl text-xs font-mono bg-lime text-ink font-bold hover:brightness-105 active:scale-95 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                      className="px-4 py-1.5 rounded-xl text-xs font-mono bg-lime text-white font-bold hover:bg-[#0052cc] active:scale-95 transition-all shadow-sm cursor-pointer disabled:opacity-50"
                     >
                       Save & Resend
                     </button>
@@ -402,7 +402,7 @@ const QnAPage = () => {
               <div className={`group relative max-w-[85%] flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
                 <div className={`rounded-2xl p-4 sm:p-5 w-full ${
                   isUser 
-                    ? 'bg-lime text-ink font-medium shadow-sm whitespace-pre-wrap' 
+                    ? 'bg-lime text-white font-medium shadow-md shadow-blue-600/10 whitespace-pre-wrap' 
                     : 'bg-white/5 border border-white/10 text-paper backdrop-blur-md shadow-sm'
                 }`}>
                   {isUser ? (
@@ -481,7 +481,7 @@ const QnAPage = () => {
         <button 
           type="submit" 
           disabled={loading || !input.trim()}
-          className="absolute right-2 top-2 bottom-2 bg-lime text-ink font-bold rounded-full px-6 hover:brightness-95 disabled:opacity-50 transition-all shadow-sm"
+          className="absolute right-2 top-2 bottom-2 bg-lime text-white font-bold rounded-full px-6 hover:bg-[#0052cc] disabled:opacity-50 transition-all shadow-md shadow-blue-600/20"
         >
           Send
         </button>
