@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ShoppingCart, ExternalLink, Zap, Copy, Check, Edit2 } from 'lucide-react';
+import { ShoppingCart, ExternalLink, Zap, Copy, Check, Edit2, Square } from 'lucide-react';
 
 const FormattedChatMessage = ({ content, onBuyAction, actionLoading }) => {
   if (!content) return null;
@@ -187,6 +187,16 @@ const QnAPage = () => {
   const [editingMsgIndex, setEditingMsgIndex] = useState(null);
   const [editingMsgContent, setEditingMsgContent] = useState('');
   const messagesEndRef = useRef(null);
+  const abortControllerRef = useRef(null);
+
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setLoading(false);
+    setMessages(prev => [...prev, { role: 'assistant', content: '⏹️ Response generation stopped.' }]);
+  };
 
   const handleCopy = (text, clipId) => {
     if (navigator?.clipboard?.writeText) {
@@ -214,11 +224,14 @@ const QnAPage = () => {
     setMessages(updatedMessages);
     setLoading(true);
 
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       const response = await axios.post('/api/chat', { 
         message: trimmed,
         session_id: id || null
-      });
+      }, { signal: controller.signal });
       
       setMessages([...updatedMessages, { role: 'assistant', content: response.data.response }]);
       
@@ -231,8 +244,12 @@ const QnAPage = () => {
         navigate(`/dashboard/chat/${response.data.session_id}`);
       }
     } catch (error) {
+      if (axios.isCancel(error) || error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
+        return;
+      }
       setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }]);
     } finally {
+      abortControllerRef.current = null;
       setLoading(false);
     }
   };
@@ -277,11 +294,14 @@ const QnAPage = () => {
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setLoading(true);
 
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       const response = await axios.post('/api/chat', { 
         message: userMessage,
         session_id: id || null
-      });
+      }, { signal: controller.signal });
       
       setMessages(prev => [...prev, { role: 'assistant', content: response.data.response }]);
       
@@ -294,8 +314,12 @@ const QnAPage = () => {
         navigate(`/dashboard/chat/${response.data.session_id}`);
       }
     } catch (error) {
+      if (axios.isCancel(error) || error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
+        return;
+      }
       setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }]);
     } finally {
+      abortControllerRef.current = null;
       setLoading(false);
     }
   };
@@ -310,11 +334,14 @@ const QnAPage = () => {
     setMessages(prev => [...prev, { role: 'user', content: buyPrompt }]);
     setLoading(true);
 
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       const response = await axios.post('/api/chat', { 
         message: buyPrompt,
         session_id: id || null
-      });
+      }, { signal: controller.signal });
       
       setMessages(prev => [...prev, { role: 'assistant', content: response.data.response }]);
       
@@ -327,8 +354,12 @@ const QnAPage = () => {
         navigate(`/dashboard/chat/${response.data.session_id}`);
       }
     } catch (error) {
+      if (axios.isCancel(error) || error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
+        return;
+      }
       setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error creating the purchase request.' }]);
     } finally {
+      abortControllerRef.current = null;
       setLoading(false);
     }
   };
@@ -460,9 +491,20 @@ const QnAPage = () => {
         })}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-white/5 border border-white/10 text-paper/60 rounded-2xl p-4 animate-pulse flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-lime animate-ping"></span>
-              <span>Processing request & analyzing live merchant prices...</span>
+            <div className="bg-white/5 border border-white/10 text-paper/70 rounded-2xl p-4 flex items-center justify-between gap-4 max-w-xl w-full sm:w-auto shadow-sm">
+              <div className="flex items-center gap-2.5 text-sm">
+                <span className="w-2.5 h-2.5 rounded-full bg-lime animate-ping flex-shrink-0"></span>
+                <span>Processing request & analyzing live merchant prices...</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleStop}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 transition-all flex-shrink-0 active:scale-95 shadow-sm cursor-pointer"
+                title="Stop chat response"
+              >
+                <Square className="w-3 h-3 fill-current" />
+                <span>Stop</span>
+              </button>
             </div>
           </div>
         )}
@@ -478,13 +520,25 @@ const QnAPage = () => {
           placeholder="Type your message or e.g. 'current price of HP omen laptop 16 RTX 4050'..."
           className="w-full bg-ink/80 border border-white/10 rounded-full pl-6 pr-32 py-4 text-paper focus:border-lime focus:outline-none transition-colors"
         />
-        <button 
-          type="submit" 
-          disabled={loading || !input.trim()}
-          className="absolute right-2 top-2 bottom-2 bg-lime text-white font-bold rounded-full px-6 hover:bg-[#0052cc] disabled:opacity-50 transition-all shadow-md shadow-blue-600/20"
-        >
-          Send
-        </button>
+        {loading ? (
+          <button 
+            type="button" 
+            onClick={handleStop}
+            className="absolute right-2 top-2 bottom-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 font-bold rounded-full px-5 flex items-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer"
+            title="Stop response"
+          >
+            <Square className="w-3.5 h-3.5 fill-current" />
+            <span>Stop</span>
+          </button>
+        ) : (
+          <button 
+            type="submit" 
+            disabled={!input.trim()}
+            className="absolute right-2 top-2 bottom-2 bg-lime text-white font-bold rounded-full px-6 hover:bg-[#0052cc] disabled:opacity-50 transition-all shadow-md shadow-blue-600/20"
+          >
+            Send
+          </button>
+        )}
       </form>
     </div>
   );

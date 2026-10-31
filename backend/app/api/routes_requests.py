@@ -43,6 +43,7 @@ def get_requests_feed(
             "blockchain_permission_id": r.blockchain_permission_id,
             "approval_id": r.approval.id if r.approval else None,
             "approval_status": r.approval.status if r.approval else None,
+            "scheduled_at": r.scheduled_at.isoformat() if getattr(r, "scheduled_at", None) else None,
             "created_at": r.created_at.isoformat() if r.created_at else None,
             "updated_at": r.updated_at.isoformat() if r.updated_at else None
         }

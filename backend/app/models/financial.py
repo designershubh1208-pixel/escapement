@@ -35,8 +35,11 @@ class Transaction(Base):
     tx_hash = Column(String(128), nullable=True)
     failure_reason = Column(Text, nullable=True)
     
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Scheduling details
+    scheduled_at = Column(DateTime, nullable=True, index=True)
+    
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     # Relationships
     user = relationship("User", back_populates="transactions")

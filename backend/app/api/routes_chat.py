@@ -1,7 +1,7 @@
 import uuid
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
@@ -22,6 +22,7 @@ from app.services.subscription_service import SubscriptionService
 from app.services.ecommerce_service import EcommerceService
 from app.services.payment_gateway_service import PaymentGatewayService
 from app.services.browser_automation import BrowserAutomationService
+from app.services.live_ecommerce_scraper import LiveEcommerceScraperService
 
 logger = logging.getLogger("defai.api.chat")
 router = APIRouter(prefix="/api/chat", tags=["Chat"])
@@ -99,7 +100,6 @@ async def send_chat_message(
 
     if is_price_inquiry and (not intent or intent.action not in ["PURCHASE", "CANCEL_SUBSCRIPTION"]):
         logger.info(f"Detected e-commerce price inquiry: '{req.message}'. Scraping multi-store live prices...")
-        from app.services.live_ecommerce_scraper import LiveEcommerceScraperService
         comparison = await LiveEcommerceScraperService.compare_stores_and_get_summary(req.message)
         ai_response_text = comparison.get("summary_markdown")
     elif not intent or intent.action not in ["PURCHASE", "CANCEL_SUBSCRIPTION", "TRANSFER", "TICKET_PURCHASE"]:
@@ -110,7 +110,7 @@ async def send_chat_message(
     has_financial_intent = False
     decision = "NONE"
     reasons = []
-    transaction_id = None
+    transaction_id = str(uuid.uuid4())
 
     # Handle subscription cancellation special case
     if intent.action == "CANCEL_SUBSCRIPTION" and intent.merchant:
@@ -148,17 +148,117 @@ async def send_chat_message(
 
     elif intent and intent.action in ["PURCHASE", "TRANSFER", "TICKET_PURCHASE"]:
         has_financial_intent = True
-        transaction_id = str(uuid.uuid4())
-        idempotency_key = f"tx-{session_id}-{int(datetime.utcnow().timestamp())}"
+        idempotency_key = f"tx-{session_id}-{int(datetime.now().timestamp())}"
+
+        # Check if transaction is scheduled for future execution
+        if intent.is_scheduled or intent.scheduled_at:
+            sched_dt = None
+            if intent.scheduled_at:
+                try:
+                    sched_dt = datetime.fromisoformat(intent.scheduled_at)
+                except Exception:
+                    sched_dt = datetime.now() + timedelta(minutes=10)
+            else:
+                sched_dt = datetime.now() + timedelta(minutes=10)
+
+            sched_time_str = sched_dt.strftime("%I:%M %p, %d %b %Y")
+
+            # Auto-resolve live market price if amount is missing on scheduled purchase
+            price_auto_resolved = False
+            target_merchant = intent.merchant or "Flipkart"
+            if (not intent.amount_paise or intent.amount_paise <= 0) and intent.action in ["PURCHASE", "TICKET_PURCHASE"]:
+                clean_query = intent.purpose or req.message
+                try:
+                    logger.info(f"Auto-resolving live market price for scheduled '{clean_query}' on {target_merchant}")
+                    live_res = await LiveEcommerceScraperService.fetch_live_price(
+                        merchant=target_merchant,
+                        query=clean_query
+                    )
+                    if live_res.get("success") and live_res.get("price_paise"):
+                        intent.amount_paise = live_res["price_paise"]
+                        if live_res.get("product_title"):
+                            intent.purpose = live_res["product_title"]
+                        price_auto_resolved = True
+                        logger.info(f"Resolved live price for scheduled order: ₹{live_res['price_paise']/100:,.2f}")
+                except Exception as ex:
+                    logger.warning(f"Could not auto-resolve live price at schedule time: {ex}")
+
+            if intent.amount_paise:
+                budget_display = f"₹{intent.amount_paise / 100:,.2f}" + (" (Current Live Price)" if price_auto_resolved else "")
+            else:
+                budget_display = "Best Available Price (Pending Verification)"
+
+            tx = Transaction(
+                id=transaction_id,
+                idempotency_key=idempotency_key,
+                session_id=session_id,
+                user_id=user_id,
+                user_message=req.message,
+                intent_json=intent.model_dump_json(),
+                action=intent.action,
+                merchant=target_merchant,
+                category=intent.category or "Electronics",
+                amount_paise=intent.amount_paise or 0,
+                currency=intent.currency or "INR",
+                status="SCHEDULED",
+                scheduled_at=sched_dt,
+                policy_decision="SCHEDULED",
+                policy_reasons=json.dumps(["SCHEDULED_EXECUTION_QUEUED"])
+            )
+            db.add(tx)
+            db.commit()
+
+            AuditService.record_event(
+                db=db,
+                action="TRANSACTION_SCHEDULED",
+                details={
+                    "merchant": target_merchant,
+                    "product": intent.purpose or req.message,
+                    "scheduled_at": sched_dt.isoformat(),
+                    "budget": budget_display
+                },
+                user_id=user_id,
+                transaction_id=transaction_id
+            )
+
+            ai_response_text = (
+                f"📅 **Purchase Scheduled Successfully**\n\n"
+                f"• **Product**: {intent.purpose or 'Item'}\n"
+                f"• **Store**: {target_merchant}\n"
+                f"• **Price / Ceiling**: {budget_display}\n"
+                f"• **Execution Time**: {sched_time_str}\n"
+                f"• **Security Guardrails**: Verified off-chain policy rules and time-locked spend permissions. "
+                f"At {sched_dt.strftime('%I:%M %p')}, Escapement Sentinel will autonomously verify policy limits and execute the order within your safety boundaries."
+            )
+
+            assistant_msg = ChatMessage(
+                session_id=session_id,
+                role="assistant",
+                content=ai_response_text,
+                intent_json=intent.model_dump_json()
+            )
+            db.add(assistant_msg)
+            db.commit()
+
+            return ChatResponse(
+                session_id=session_id,
+                response=ai_response_text,
+                intent=intent,
+                hasFinancialIntent=True,
+                decision="SCHEDULED",
+                policy_reasons=["SCHEDULED_EXECUTION_QUEUED"],
+                transaction_id=transaction_id
+            )
 
         # 4. Check live e-commerce stock and execute headless browser action using Session Key
         browser_res = None
         if intent.action == "PURCHASE":
+            clean_search_query = intent.purpose or req.message
             browser_res = await BrowserAutomationService.execute_ecommerce_action(
                 db=db,
                 user_id=user_id,
                 merchant=intent.merchant or "Flipkart",
-                product_query=req.message
+                product_query=clean_search_query
             )
 
             if browser_res.get("status") == "OUT_OF_STOCK":

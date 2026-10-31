@@ -25,11 +25,11 @@ class Settings(BaseSettings):
     DATABASE_URL: Optional[str] = "mysql+pymysql://root:YOUR_PASSWORD_HERE@localhost:3306/defai_sentinel"
     FALLBACK_SQLITE_URL: str = f"sqlite:///{os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'defai_sentinel.db')).replace(chr(92), '/')}"
     
-    # AI Engine (Ollama / Local LLM)
-    OLLAMA_BASE_URL: str = "http://localhost:11434/v1"
-    OLLAMA_API_KEY: str = "ollama"
-    OLLAMA_MODEL: str = "richardyoung/qwen2.5-14b-instruct-abliterated"
-    AI_TIMEOUT_SECONDS: int = 60
+    # AI Engine (Cloud-Native OpenRouter)
+    OLLAMA_BASE_URL: str = "https://openrouter.ai/api/v1"
+    OLLAMA_API_KEY: str = ""
+    OLLAMA_MODEL: str = "nvidia/nemotron-3.5-lightning:free"
+    AI_TIMEOUT_SECONDS: int = 30
     
     # Blockchain / EVM Configuration
     EVM_RPC_URL: str = "http://127.0.0.1:8545"

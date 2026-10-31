@@ -18,6 +18,8 @@ class StructuredIntent(BaseModel):
     purpose: Optional[str] = None
     recurring: bool = False
     requires_approval: bool = False
+    is_scheduled: bool = Field(default=False, description="Whether the user requested scheduled/delayed execution")
+    scheduled_at: Optional[str] = Field(None, description="Target scheduled timestamp in ISO format or natural time")
     identifier: Optional[str] = Field(None, description="Product, subscription, or event identifier")
     uncertainty_notes: Optional[str] = None
 

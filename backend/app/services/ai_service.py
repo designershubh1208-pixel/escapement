@@ -2,12 +2,13 @@ import json
 import re
 import logging
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Dict, Any
 import httpx
 from openai import AsyncOpenAI
 import asyncio
 from app.config import settings
 from app.schemas.intent import StructuredIntent
+from app.services.schedule_service import ScheduleParserService
 
 logger = logging.getLogger("defai.ai_service")
 
@@ -20,15 +21,21 @@ class BaseAIProvider(ABC):
     async def extract_intent(self, user_input: str) -> StructuredIntent:
         pass
 
-class OllamaAIProvider(BaseAIProvider):
+class CloudAIProvider(BaseAIProvider):
     def __init__(self):
-        self.timeout = 3.5
+        # Allow sufficient timeout for cloud providers like OpenRouter while keeping local fast
+        self.timeout = float(getattr(settings, "AI_TIMEOUT_SECONDS", 25.0) or 25.0)
+        default_headers = {
+            "HTTP-Referer": "http://localhost:3000",
+            "X-Title": "DeFAI Sentinel",
+        }
         self.client = AsyncOpenAI(
             base_url=settings.OLLAMA_BASE_URL,
             api_key=settings.OLLAMA_API_KEY,
-            timeout=self.timeout
+            timeout=self.timeout,
+            default_headers=default_headers
         )
-        self.model = settings.OLLAMA_MODEL or "baytout3/qwen3.5-uncensored:9b"
+        self.model = settings.OLLAMA_MODEL or "qwen/qwen-2.5-72b-instruct"
 
     async def general_qa(self, user_input: str) -> str:
         system_prompt = (
@@ -38,7 +45,7 @@ class OllamaAIProvider(BaseAIProvider):
             "provide buying guidance, answer general knowledge, or chat casually."
         )
 
-        # 1. Try local model with realistic timeout
+        # 1. Try local or cloud LLM with configured timeout
         try:
             call_coro = self.client.chat.completions.create(
                 model=self.model,
@@ -54,7 +61,7 @@ class OllamaAIProvider(BaseAIProvider):
             if content and content.strip():
                 return content.strip()
         except Exception as e:
-            logger.info(f"Ollama QA ({self.model}) took >{self.timeout}s or encountered: {e}. Using IntelligentFallbackAI.")
+            logger.warning(f"AI Provider ({self.model} via {settings.OLLAMA_BASE_URL}) warning: {e}. Utilizing IntelligentFallbackAI.")
 
         # 2. Always provide a natural, instant AI response via intelligent fallback engine
         return IntelligentFallbackAI.answer(user_input)
@@ -73,6 +80,8 @@ class OllamaAIProvider(BaseAIProvider):
         if not has_financial_signal:
             return StructuredIntent(action="NONE", purpose=None)
 
+        sched_info = ScheduleParserService.parse_schedule_and_query(user_input)
+
         system_prompt = """You are a strictly constrained financial intent extractor for DeFAI Sentinel.
 Your SOLE job is to parse the user's prompt into a valid JSON object matching the schema below.
 Output ONLY raw JSON. No explanation, no markdown ticks, no preamble.
@@ -87,14 +96,17 @@ Schema:
   "purpose": string or null,
   "recurring": boolean,
   "requires_approval": boolean,
+  "is_scheduled": boolean,
+  "scheduled_at": string or null,
   "identifier": string or null,
   "uncertainty_notes": string or null
 }
 
 Rules:
 1. If the user is having a casual conversation and NOT making a financial request, action MUST be "NONE".
-2. If amount is in Rupees (₹), multiply by 100 to get paise. Example: ₹2,000 -> 200000.
-3. Never invent amounts or merchants that were not mentioned.
+2. If amount is in Rupees (₹), multiply by 100 to get paise. Example: ₹2,000 -> 200000. Under 200,000 -> 20000000.
+3. If the user specifies a target execution time (e.g. "on 7:14 PM", "tomorrow at 10 AM", "in 15 minutes"), set "is_scheduled": true and "scheduled_at" to that time.
+4. Normalize merchants like Croma, Amazon, Flipkart, Myntra, Swiggy, Zomato, BookMyShow.
 """
         try:
             call_coro = self.client.chat.completions.create(
@@ -105,22 +117,37 @@ Rules:
                 ],
                 temperature=0.1
             )
-            response = await asyncio.wait_for(call_coro, timeout=3.5)
+            response = await asyncio.wait_for(call_coro, timeout=self.timeout)
             raw_text = response.choices[0].message.content or ""
-            json_match = re.search(r"\{[\s\S]*\}", raw_text)
+            # Strip markdown codeblocks if present
+            cleaned_text = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_text.strip(), flags=re.MULTILINE)
+            json_match = re.search(r"\{[\s\S]*\}", cleaned_text)
             if json_match:
                 raw_json = json.loads(json_match.group(0))
-                return StructuredIntent.model_validate(raw_json)
+                structured = StructuredIntent.model_validate(raw_json)
+                # Overlay deterministic scheduling parser guarantees
+                if sched_info["is_scheduled"]:
+                    structured.is_scheduled = True
+                    structured.scheduled_at = sched_info["scheduled_at_iso"] or structured.scheduled_at
+                if sched_info["merchant"]:
+                    structured.merchant = sched_info["merchant"]
+                if sched_info["budget_paise"] and (not structured.amount_paise or structured.amount_paise == 0):
+                    structured.amount_paise = sched_info["budget_paise"]
+                if sched_info["cleaned_query"] and (not structured.purpose or structured.purpose == "NONE"):
+                    structured.purpose = sched_info["cleaned_query"]
+                return structured
         except Exception as e:
-            logger.info(f"Ollama intent extraction ({e}), using instant constrained fallback parser.")
+            logger.warning(f"Cloud/local intent extraction error ({e}), using instant constrained fallback parser.")
 
-        # Fallback deterministic parser
-        return ConstrainedFallbackParser.parse(user_input)
+        # Fallback deterministic parser with scheduling awareness
+        return ConstrainedFallbackParser.parse(user_input, sched_info)
 
 class ConstrainedFallbackParser:
     @staticmethod
-    def parse(user_input: str) -> StructuredIntent:
+    def parse(user_input: str, sched_info: Optional[Dict[str, Any]] = None) -> StructuredIntent:
         text = user_input.lower().strip()
+        if not sched_info:
+            sched_info = ScheduleParserService.parse_schedule_and_query(user_input)
         
         # Check subscription cancellation
         if "cancel" in text and ("subscription" in text or "netflix" in text or "spotify" in text or "prime" in text):
@@ -142,34 +169,39 @@ class ConstrainedFallbackParser:
         if is_purchase or is_ticket:
             action = "TICKET_PURCHASE" if is_ticket else "PURCHASE"
             
-            # Detect merchant
-            merchant = None
-            if "amazon" in text: merchant = "Amazon"
-            elif "flipkart" in text: merchant = "Flipkart"
-            elif "bookmyshow" in text: merchant = "BookMyShow"
-            elif "myntra" in text: merchant = "Myntra"
-            elif "croma" in text: merchant = "Croma"
-            elif "insta" in text: merchant = "Instagram"
-            else: merchant = "Flipkart"
+            # Detect merchant using ScheduleParserService normalized aliases
+            merchant = sched_info.get("merchant")
+            if not merchant:
+                if "amazon" in text: merchant = "Amazon"
+                elif "flipkart" in text: merchant = "Flipkart"
+                elif "bookmyshow" in text: merchant = "BookMyShow"
+                elif "myntra" in text: merchant = "Myntra"
+                elif "croma" in text or "chorma" in text or "chroma" in text: merchant = "Croma"
+                elif "insta" in text: merchant = "Instagram"
+                else: merchant = "Croma" if "croma" in text else "Flipkart"
 
             # Detect amount
-            amount_paise = None
-            # Match formats like ₹2000, ₹ 2,000, 2000 inr, under 2000, 20,000
-            amount_match = re.search(r"(?:₹|rs\.?|inr|under|below|for)\s*([\d,]+)", text)
-            if amount_match:
-                clean_num = amount_match.group(1).replace(",", "")
-                try:
-                    rupees = int(clean_num)
-                    amount_paise = rupees * 100
-                except ValueError:
-                    amount_paise = None
+            amount_paise = sched_info.get("budget_paise")
+            if not amount_paise:
+                amount_match = re.search(r"(?:₹|rs\.?|inr|under|below|for)\s*[><=]?\s*([\d,]+)", text)
+                if amount_match:
+                    clean_num = amount_match.group(1).replace(",", "")
+                    try:
+                        rupees = int(clean_num)
+                        amount_paise = rupees * 100
+                    except ValueError:
+                        amount_paise = None
+
+            product_name = sched_info.get("cleaned_query") or user_input[:80]
 
             return StructuredIntent(
                 action=action,
                 merchant=merchant,
                 amount_paise=amount_paise,
                 currency="INR",
-                purpose=user_input[:80],
+                purpose=product_name,
+                is_scheduled=sched_info.get("is_scheduled", False),
+                scheduled_at=sched_info.get("scheduled_at_iso"),
                 requires_approval=amount_paise is None or amount_paise > 50000
             )
 
@@ -302,5 +334,8 @@ class IntelligentFallbackAI:
         )
 
 
+# Backward compatibility alias
+OllamaAIProvider = CloudAIProvider
+
 # Singleton provider instance
-ai_provider: BaseAIProvider = OllamaAIProvider()
+ai_provider: BaseAIProvider = CloudAIProvider()

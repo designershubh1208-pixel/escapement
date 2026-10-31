@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: 'Plus Jakarta Sans';
+        font-style: normal;
+        font-weight: 400 900;
+        src: local('Plus Jakarta Sans'), local('Inter'), local('Segoe UI'), local('Arial');
+      }
+      @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-weight: 400 800;
+        src: local('JetBrains Mono'), local('Consolas'), local('Courier New');
+      }
+
+      :root {
+        --bg-obsidian: #010320;
+        --card-bg: rgba(8, 14, 30, 0.92);
+        --text-white: #ffffff;
+        --text-slate: #cbd5e1;
+        --accent-cyan: #0defd1;
+        --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: transparent;
+        font-family: var(--font-sans);
+        color: var(--text-white);
+      }
+
+      #scene3 {
+        width: 1920px;
+        height: 1080px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+      }
+
+      .badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border-radius: 9999px;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border: 1px solid rgba(0, 102, 255, 0.4);
+        background: rgba(15, 23, 42, 0.9);
+        color: #93c5fd;
+        margin-bottom: 16px;
+      }
+
+      .glass-card {
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+      }
+
+      .mono-code {
+        font-family: var(--font-mono);
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="scene3"
+      data-composition-id="scene3"
+      data-start="0"
+      data-duration="4.5"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div id="s3-header" style="text-align: center; margin-bottom: 44px;">
+        <div class="badge-pill" data-layout-ignore>
+          <span>Architecture of Absolute Governance</span>
+        </div>
+        <h2 style="font-size: 58px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;">
+          AI Reasons. Policy Decides. Code Constrains.
+        </h2>
+      </div>
+
+      <!-- 3 Bento Columns -->
+      <div style="display: grid; grid-template-columns: repeat(3, 400px); gap: 28px;">
+        <!-- Card 1 -->
+        <div id="s3-card1" class="glass-card" style="padding: 36px 32px; display: flex; flex-direction: column; justify-content: space-between; min-height: 380px;">
+          <div>
+            <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(0, 102, 255, 0.25); border: 1px solid rgba(0, 102, 255, 0.5); display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+              <span style="font-size: 24px; color: #93c5fd;">🛡</span>
+            </div>
+            <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.02em;">
+              Deterministic Policy Core
+            </h3>
+            <p style="font-size: 17px; color: var(--text-slate); line-height: 1.6;">
+              Hard velocity caps, daily budgets, and merchant allowlists in pure compiled code.
+            </p>
+          </div>
+          <div class="mono-code" data-layout-ignore style="font-size: 13px; color: var(--accent-cyan); font-weight: 600; padding: 10px 14px; background: rgba(0,0,0,0.45); border-radius: 8px;">
+            ✓ PYDANTIC V2 ENFORCEMENT
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div id="s3-card2" class="glass-card" style="padding: 36px 32px; display: flex; flex-direction: column; justify-content: space-between; min-height: 380px; border-color: rgba(0, 102, 255, 0.45); box-shadow: 0 25px 60px rgba(0, 102, 255, 0.18);">
+          <div>
+            <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(13, 239, 209, 0.18); border: 1px solid rgba(13, 239, 209, 0.4); display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+              <span style="font-size: 24px; color: #0defd1;">⚡</span>
+            </div>
+            <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.02em;">
+              Anti-Arbitrage DOM Engine
+            </h3>
+            <p style="font-size: 17px; color: var(--text-slate); line-height: 1.6;">
+              DOM web scraping cross-verifies live store prices before execution.
+            </p>
+          </div>
+          <div class="mono-code" data-layout-ignore style="font-size: 13px; color: var(--accent-cyan); font-weight: 600; padding: 10px 14px; background: rgba(0,0,0,0.45); border-radius: 8px;">
+            ✓ REAL-TIME STORE SCRAPERS
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div id="s3-card3" class="glass-card" style="padding: 36px 32px; display: flex; flex-direction: column; justify-content: space-between; min-height: 380px;">
+          <div>
+            <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(16, 185, 129, 0.18); border: 1px solid rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+              <span style="font-size: 24px; color: #6ee7b7;">🔒</span>
+            </div>
+            <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.02em;">
+              Dual-Rail Settlement
+            </h3>
+            <p style="font-size: 17px; color: var(--text-slate); line-height: 1.6;">
+              Time-locked EVM allowances with immutable SHA-256 audit ledger.
+            </p>
+          </div>
+          <div class="mono-code" data-layout-ignore style="font-size: 13px; color: #6ee7b7; font-weight: 600; padding: 10px 14px; background: rgba(0,0,0,0.45); border-radius: 8px;">
+            ✓ TIME-LOCKED EVM LEDGER
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#s3-header", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0.1);
+      tl.fromTo("#s3-card1", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0.4);
+      tl.fromTo("#s3-card2", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0.7);
+      tl.fromTo("#s3-card3", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 1.0);
+      tl.to("#scene3", { opacity: 0, y: -20, duration: 0.35, ease: "power2.in" }, 4.15);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["scene3"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

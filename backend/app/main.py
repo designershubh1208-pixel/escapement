@@ -50,6 +50,11 @@ async def lifespan(app: FastAPI):
                     conn.execute(text("ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)"))
                 if "is_verified" not in existing_cols:
                     conn.execute(text("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT 0"))
+                
+                # Check transactions table columns
+                existing_tx_cols = [c["name"] for c in inspector.get_columns("transactions")]
+                if "scheduled_at" not in existing_tx_cols:
+                    conn.execute(text("ALTER TABLE transactions ADD COLUMN scheduled_at DATETIME"))
                 conn.commit()
             except Exception as mig_err:
                 logger.warning(f"Column check notice: {mig_err}")

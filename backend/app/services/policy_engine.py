@@ -49,13 +49,13 @@ class DeterministicPolicyEngine:
             # Create default policy if none exists yet
             policy = UserPolicy(
                 user_id=user_id,
-                daily_limit_paise=200000,           # ₹2,000
-                per_transaction_limit_paise=50000,  # ₹500
-                monthly_limit_paise=1000000,        # ₹10,000
-                approval_threshold_paise=50000,     # ₹500
-                allowlisted_merchants='["Amazon", "Flipkart"]',
+                daily_limit_paise=10000000,          # ₹1,00,000
+                per_transaction_limit_paise=25000000, # ₹2,50,000
+                monthly_limit_paise=50000000,        # ₹5,00,000
+                approval_threshold_paise=50000,      # ₹500
+                allowlisted_merchants='["Amazon", "Flipkart", "Croma", "Myntra", "Apple", "MakeMyTrip"]',
                 blocked_merchants='[]',
-                allowlisted_categories='["electronics", "books", "groceries", "subscription", "ticket"]',
+                allowlisted_categories='["electronics", "books", "groceries", "subscription", "ticket", "travel"]',
                 blocked_categories='["gambling", "crypto", "adult"]'
             )
             db.add(policy)
@@ -94,10 +94,29 @@ class DeterministicPolicyEngine:
 
         # Mandatory Block Check 4: Category Blocklist / Allowlist
         if intent.category:
-            c_norm = intent.category.lower()
-            if c_norm in block_categories:
+            c_norm = intent.category.lower().strip()
+            category_mapping = {
+                "mobile phone": "electronics",
+                "mobile": "electronics",
+                "smartphone": "electronics",
+                "smartphones": "electronics",
+                "phone": "electronics",
+                "laptop": "electronics",
+                "tablet": "electronics",
+                "gadget": "electronics",
+                "gadgets": "electronics",
+                "computer": "electronics",
+                "flight": "travel",
+                "hotel": "travel",
+                "train": "travel",
+                "bus": "travel",
+                "movie": "ticket",
+                "concert": "ticket",
+            }
+            canonical_cat = category_mapping.get(c_norm, c_norm)
+            if canonical_cat in block_categories or c_norm in block_categories:
                 reasons.append("CATEGORY_NOT_ALLOWED")
-            elif allow_categories and c_norm not in allow_categories:
+            elif allow_categories and (canonical_cat not in allow_categories and c_norm not in allow_categories):
                 reasons.append("CATEGORY_NOT_ALLOWED")
 
         # Calculate today's spend

@@ -119,6 +119,8 @@ const ChatInterface = () => {
     MERCHANT_NOT_ALLOWED: 'Merchant is not on the user allowlist.',
     MERCHANT_BLOCKED: 'Merchant is explicitly blocked in security settings.',
     OUT_OF_STOCK_CART_MONITOR: 'Item out of stock. Saved in cart for continuous inventory tracking.',
+    INVALID_OR_MISSING_TRANSACTION_AMOUNT: 'No purchase price or budget ceiling was specified. A valid amount is required to evaluate policy rules.',
+    SCHEDULED_EXECUTION_QUEUED: 'Transaction is time-locked and queued for autonomous execution at the scheduled time.',
     ALL_POLICY_CONDITIONS_SATISFIED: 'All deterministic invariant checks and spend limits satisfied.'
   };
 
@@ -509,8 +511,19 @@ const ChatInterface = () => {
                         <span className="text-lime font-bold text-sm">{amountFormatted}</span>
                       </>
                     )}
-                    <span>•</span>
-                    <span>{req.created_at ? new Date(req.created_at).toLocaleString() : ''}</span>
+                    {req.scheduled_at ? (
+                      <>
+                        <span>•</span>
+                        <span className="text-blue-400 font-semibold bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                          ⏰ Executes at {new Date(req.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span>•</span>
+                        <span>{req.created_at ? new Date(req.created_at).toLocaleString() : ''}</span>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -585,15 +598,27 @@ const ChatInterface = () => {
 
               {/* Status and Timestamp Bar */}
               <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-black/5 dark:border-white/10 mb-6 text-xs font-mono">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="text-paper/40">Status:</span>
                   <span className={`px-2.5 py-0.5 rounded-full font-bold uppercase ${getStatusBadgeClass(selectedRequest.status)}`}>
                     {selectedRequest.status}
                   </span>
+                  {selectedRequest.scheduled_at && (
+                    <span className="px-2.5 py-0.5 rounded-full font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1">
+                      ⏰ Scheduled for: {new Date(selectedRequest.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  )}
                 </div>
-                <span className="text-paper/40">
-                  {selectedRequest.created_at ? new Date(selectedRequest.created_at).toLocaleString() : ''}
-                </span>
+                <div className="text-paper/40 text-right">
+                  {selectedRequest.scheduled_at ? (
+                    <div>
+                      <span className="text-blue-300 font-bold">Execution: {new Date(selectedRequest.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="block text-[10px] text-paper/30">Requested: {new Date(selectedRequest.created_at).toLocaleTimeString()}</span>
+                    </div>
+                  ) : (
+                    <span>{selectedRequest.created_at ? new Date(selectedRequest.created_at).toLocaleString() : ''}</span>
+                  )}
+                </div>
               </div>
 
               {/* Direct E-Commerce Store Verification Box */}
@@ -725,7 +750,7 @@ const ChatInterface = () => {
                     Deterministic Policy Evaluation
                   </h4>
                   <span className="font-mono text-xs text-paper/60 font-semibold">
-                    Decision: {selectedRequest.policy_decision || selectedRequest.status}
+                    Decision: {selectedRequest.status === 'BLOCKED' ? 'BLOCK' : (selectedRequest.policy_decision || selectedRequest.status)}
                   </span>
                 </div>
 

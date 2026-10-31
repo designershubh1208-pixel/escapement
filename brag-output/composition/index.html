@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Escapement — SaaS Launch</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: 'Plus Jakarta Sans';
+        font-style: normal;
+        font-weight: 400 900;
+        src: local('Plus Jakarta Sans'), local('Inter'), local('Segoe UI'), local('Arial');
+      }
+      @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-weight: 400 800;
+        src: local('JetBrains Mono'), local('Consolas'), local('Courier New');
+      }
+
+      :root {
+        --bg-obsidian: #010320;
+        --accent-blue: #0066ff;
+        --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--bg-obsidian);
+        font-family: var(--font-sans);
+      }
+
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        background: var(--bg-obsidian);
+        overflow: hidden;
+      }
+
+      /* Subtle Cyber Grid */
+      #bg-grid {
+        position: absolute;
+        inset: 0;
+        background-image: 
+          linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+        background-size: 64px 64px;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      /* Ambient Top Sapphire Glow */
+      #ambient-glow {
+        position: absolute;
+        top: -340px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 1400px;
+        height: 700px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(0, 102, 255, 0.42) 0%, rgba(0, 102, 255, 0) 70%);
+        filter: blur(100px);
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      .clip {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        z-index: 10;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="18"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- Background Elements -->
+      <div id="bg-grid"></div>
+      <div id="ambient-glow"></div>
+
+      <!-- =================================================================== -->
+      <!-- AUDIO TRACKS & SFX (All with explicit IDs & exact durations)        -->
+      <!-- =================================================================== -->
+      <audio
+        id="bg-music"
+        class="clip"
+        data-start="0"
+        data-duration="18"
+        data-fade-out="1.5"
+        src="assets/music/happy-beats-business-moves-vol-10-by-ende-dot-app.mp3"
+        preload="auto"
+      ></audio>
+      <audio
+        id="sfx-typing"
+        class="clip"
+        data-start="0.6"
+        data-duration="0.05"
+        src="assets/sfx/keyboard/keypress-001.wav"
+        preload="auto"
+      ></audio>
+      <audio
+        id="sfx-glitch"
+        class="clip"
+        data-start="2.5"
+        data-duration="0.38"
+        src="assets/sfx/interface/glitch_002.ogg"
+        preload="auto"
+      ></audio>
+      <audio
+        id="sfx-firewall"
+        class="clip"
+        data-start="3.5"
+        data-duration="1.48"
+        src="assets/sfx/impact/impactBell_heavy_000.ogg"
+        preload="auto"
+      ></audio>
+      <audio
+        id="sfx-switch1"
+        class="clip"
+        data-start="4.2"
+        data-duration="0.31"
+        src="assets/sfx/ui/switch1.ogg"
+        preload="auto"
+      ></audio>
+      <audio
+        id="sfx-switch2"
+        class="clip"
+        data-start="5.0"
+        data-duration="0.37"
+        src="assets/sfx/ui/switch3.ogg"
+        preload="auto"
+      ></audio>
+      <audio
+        id="sfx-click"
+        class="clip"
+        data-start="7.6"
+        data-duration="0.10"
+        src="assets/sfx/interface/click_001.ogg"
+        preload="auto"
+      ></audio>
+      <audio
+        id="sfx-outro"
+        class="clip"
+        data-start="12.0"
+        data-duration="1.48"
+        src="assets/sfx/impact/impactBell_heavy_000.ogg"
+        preload="auto"
+      ></audio>
+
+      <!-- =================================================================== -->
+      <!-- SUB-COMPOSITION SCENE HOSTS                                         -->
+      <!-- =================================================================== -->
+      <div
+        id="scene1-host"
+        class="clip"
+        data-composition-id="scene1"
+        data-composition-src="compositions/scene1.html"
+        data-start="0"
+        data-duration="3.5"
+        data-track-index="1"
+      ></div>
+
+      <div
+        id="scene2-host"
+        class="clip"
+        data-composition-id="scene2"
+        data-composition-src="compositions/scene2.html"
+        data-start="3.5"
+        data-duration="4"
+        data-track-index="2"
+      ></div>
+
+      <div
+        id="scene3-host"
+        class="clip"
+        data-composition-id="scene3"
+        data-composition-src="compositions/scene3.html"
+        data-start="7.5"
+        data-duration="4.5"
+        data-track-index="3"
+      ></div>
+
+      <div
+        id="scene4-host"
+        class="clip"
+        data-composition-id="scene4"
+        data-composition-src="compositions/scene4.html"
+        data-start="12"
+        data-duration="6"
+        data-track-index="4"
+      ></div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- ROOT TIMELINE                                                        -->
+    <!-- ===================================================================== -->
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      tl.to("#ambient-glow", { scale: 1.1, opacity: 0.9, duration: 9, yoyo: true, repeat: 1, ease: "sine.inOut" }, 0);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

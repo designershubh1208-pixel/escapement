@@ -1,0 +1,139 @@
+{
+  "ok": false,
+  "strict": false,
+  "browserSkipped": true,
+  "lint": {
+    "ok": false,
+    "errorCount": 4,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "host_missing_composition_id",
+        "severity": "error",
+        "message": "Composition host for \"compositions/scene1.html\" is missing `data-composition-id`.",
+        "selector": "#scene1-host",
+        "dataAttributes": {},
+        "sourceFile": "E:\\DeFAI_sentinal\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Set `data-composition-id` on every `data-composition-src` host element."
+      },
+      {
+        "code": "host_missing_composition_id",
+        "severity": "error",
+        "message": "Composition host for \"compositions/scene2.html\" is missing `data-composition-id`.",
+        "selector": "#scene2-host",
+        "dataAttributes": {},
+        "sourceFile": "E:\\DeFAI_sentinal\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Set `data-composition-id` on every `data-composition-src` host element."
+      },
+      {
+        "code": "host_missing_composition_id",
+        "severity": "error",
+        "message": "Composition host for \"compositions/scene3.html\" is missing `data-composition-id`.",
+        "selector": "#scene3-host",
+        "dataAttributes": {},
+        "sourceFile": "E:\\DeFAI_sentinal\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Set `data-composition-id` on every `data-composition-src` host element."
+      },
+      {
+        "code": "host_missing_composition_id",
+        "severity": "error",
+        "message": "Composition host for \"compositions/scene4.html\" is missing `data-composition-id`.",
+        "selector": "#scene4-host",
+        "dataAttributes": {},
+        "sourceFile": "E:\\DeFAI_sentinal\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Set `data-composition-id` on every `data-composition-src` host element."
+      }
+    ],
+    "filesScanned": 5
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "duration": 0,
+    "samples": [],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 0,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [],
+    "checked": 0,
+    "passed": 0
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "step": 0,
+    "samples": 0
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

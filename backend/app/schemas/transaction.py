@@ -20,6 +20,7 @@ class TransactionResponse(BaseModel):
     policy_reasons: Optional[str] = None
     blockchain_permission_id: Optional[str] = None
     tx_hash: Optional[str] = None
+    scheduled_at: Optional[datetime] = None
     created_at: datetime
 
 class ApprovalDecisionRequest(BaseModel):
