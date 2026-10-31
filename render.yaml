@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: defai-sentinel-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: OLLAMA_BASE_URL
+        value: https://openrouter.ai/api/v1
+      - key: OLLAMA_MODEL
+        value: nvidia/nemotron-3.5-lightning:free
+      - key: PAYMENT_MODE
+        value: sandbox
+      - key: ALLOW_LIVE_PAYMENTS
+        value: "false"
+      - key: OLLAMA_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false

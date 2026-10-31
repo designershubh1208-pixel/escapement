@@ -1,5 +1,5 @@
 # ==============================================================================
-# Environment & Secret Files
+# Environment & Secret Files (Exhaustive Protection)
 # ==============================================================================
 .env
 .env*
@@ -7,6 +7,38 @@
 *.env
 *.env.local
 *.env.*.local
+*.env.production
+*.env.staging
+*.env.development
+
+# Private Keys, Certificates & Tokens
+*.pem
+*.key
+*.pkcs12
+*.pfx
+*.p12
+*.crt
+*.cert
+*.der
+*.keystore
+id_rsa*
+id_ed25519*
+
+# OAuth, Service Accounts & API Credentials
+*credentials*.json
+*client_secret*.json
+*service_account*.json
+*service-account*.json
+*secret*.json
+token.json
+auth_token*
+.secrets*
+secrets/
+
+# Database dumps & local backups
+*.sql
+*.dump
+*.backup
 
 # ==============================================================================
 # Database & SQLite Files

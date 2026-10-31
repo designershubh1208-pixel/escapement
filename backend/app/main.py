@@ -79,10 +79,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS Middleware (supports existing React/Vite development server)
+# CORS Middleware (supports local Vite, Vercel deployments, and custom domains)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origin_regex=r"^https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

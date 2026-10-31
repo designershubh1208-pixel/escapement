@@ -192,12 +192,13 @@ const AuthPage = ({ defaultMode = 'login' }) => {
   };
 
   // OAuth triggers
+  const apiBase = import.meta.env.VITE_API_URL || '';
   const handleGoogleAuth = () => {
-    window.location.href = 'http://localhost:5001/api/auth/google/login';
+    window.location.href = `${apiBase}/api/auth/google/login`;
   };
 
   const handleGithubAuth = () => {
-    window.location.href = 'http://localhost:5001/api/auth/github/login';
+    window.location.href = `${apiBase}/api/auth/github/login`;
   };
 
 

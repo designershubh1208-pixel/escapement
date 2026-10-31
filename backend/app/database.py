@@ -14,8 +14,11 @@ def get_engine():
     if engine is not None:
         return engine
     
-    # Try configured DATABASE_URL (MySQL)
+    # Try configured DATABASE_URL (MySQL / Cloud Relational)
     db_url = settings.DATABASE_URL
+    if db_url and db_url.startswith("mysql://"):
+        db_url = db_url.replace("mysql://", "mysql+pymysql://", 1)
+
     if db_url and "YOUR_PASSWORD" not in db_url:
         try:
             test_engine = create_engine(
